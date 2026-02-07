@@ -151,11 +151,35 @@ Provide a helpful response listing ONLY these restaurants."""
         return response["content"]
     
     def _check_handoff(self, user_message: str, restaurants: List[Dict]) -> Optional[str]:
-        """Check if user wants to book (handoff trigger)"""
-        booking_keywords = ["book", "reserve", "reservation", "table"]
+        """Use LLM to determine if user wants to proceed with booking"""
+        if not restaurants:
+            return None
         
-        if any(keyword in user_message.lower() for keyword in booking_keywords):
-            if restaurants:
-                return "booking_agent"
+        # Ask LLM to determine intent
+        handoff_prompt = f"""User message: {user_message}
+
+Restaurants were just shown to the user.
+
+Does the user want to PROCEED WITH BOOKING now?
+- If user is just asking for search/recommendations → return "no"
+- If user confirms/selects a restaurant to book → return "yes"
+
+Examples:
+"I want to book a table in Indian restaurant" → no (just searching)
+"Yes, book Spice Symphony" → yes (confirming booking)
+"I'll take the first one" → yes (selecting)
+"Show me more options" → no (still searching)
+
+Return ONLY "yes" or "no"."""
         
-        return None
+        messages = [{"role": "user", "content": [{"text": handoff_prompt}]}]
+        
+        response = self.invoke_llm(
+            messages=messages,
+            system_prompt="You determine if user wants to proceed with booking.",
+            temperature=0.0,
+            max_tokens=10
+        )
+        
+        decision = response["content"].strip().lower()
+        return "booking_agent" if decision == "yes" else None

@@ -120,9 +120,12 @@ class RestaurantBookingWorkflow:
         
         restaurants = result.get("restaurants", [])
         
-        # Check if user is selecting from multiple restaurants
+        # Auto-select if only 1 restaurant, or check if user is selecting from multiple
         selected_restaurant = None
-        if len(state.get("restaurants", [])) > 1:
+        if len(restaurants) == 1:
+            # Only one restaurant found - auto-select it
+            selected_restaurant = restaurants[0]
+        elif len(state.get("restaurants", [])) > 1:
             # User might be confirming a restaurant by name
             for r in state["restaurants"]:
                 if r.get('name', '').lower() in user_message.lower():
@@ -153,56 +156,47 @@ class RestaurantBookingWorkflow:
         print(f"[DEBUG] Booking Agent - State restaurants: {state.get('restaurants')}")
         print(f"[DEBUG] Booking Agent - Partial params: {state.get('partial_booking_params')}")
         
-        # Use selected restaurant or restaurants from state
+        # Use LLM to extract restaurant from conversation history
         if context.get("selected_restaurant"):
             context["restaurants"] = [context["selected_restaurant"]]
             print(f"[DEBUG] Booking Agent - Using selected_restaurant: {context['selected_restaurant'].get('name')}")
-        elif state.get("restaurants"):
-            # Extract restaurant name from conversation history if available
-            if context.get("conversation_history") and len(state["restaurants"]) > 1:
-                # Use LLM to identify which restaurant from conversation
-                from src.core import AmazonNovaProvider
-                bedrock = AmazonNovaProvider("amazon.nova-lite-v1:0", region=os.getenv('AWS_REGION', 'us-east-1'))
-                restaurant_list = "\n".join([f"{r.get('name')} (ID: {r.get('restaurantId')})" for r in state["restaurants"]])
-                match_prompt = f"""Which restaurant ID?
+        elif context.get("conversation_history") and state.get("restaurants"):
+            # Let LLM extract restaurant from conversation
+            from src.core import AmazonNovaProvider
+            bedrock = AmazonNovaProvider("amazon.nova-lite-v1:0", region=os.getenv('AWS_REGION', 'us-east-1'))
+            restaurant_list = "\n".join([f"{r.get('name')} (ID: {r.get('restaurantId')})" for r in state["restaurants"]])
+            match_prompt = f"""Extract restaurant ID from conversation.
 
 Conversation:
 {context['conversation_history']}
 
-User: {user_message}
+Current message: {user_message}
 
-Restaurants:
+Available restaurants:
 {restaurant_list}
 
-Return ONLY the restaurant ID (e.g., rest_001). No explanation.
-
-If user names a restaurant → return its ID
-If user says "yes"/"ok"/"book it" → return last mentioned restaurant ID
-If unclear → return FIRST restaurant ID
-
-ID:"""
-                
-                try:
-                    match_response = bedrock.invoke(
-                        messages=[{"role": "user", "content": [{"text": match_prompt}]}],
-                        temperature=0.0,
-                        max_tokens=50
-                    )
-                    matched_id = match_response["content"].strip()
-                    for rest in state["restaurants"]:
-                        if rest.get("restaurantId") == matched_id:
-                            context["restaurants"] = [rest]
-                            print(f"[DEBUG] Booking Agent - LLM matched restaurant: {rest.get('name')} ({matched_id})")
-                            break
-                    else:
-                        context["restaurants"] = state["restaurants"]
-                        print(f"[DEBUG] Booking Agent - LLM match failed, using all restaurants")
-                except Exception as e:
-                    print(f"[DEBUG] Booking Agent - LLM matching error: {e}")
+Which restaurant is mentioned? Return ONLY the restaurant ID."""
+            
+            try:
+                match_response = bedrock.invoke(
+                    messages=[{"role": "user", "content": [{"text": match_prompt}]}],
+                    temperature=0.0,
+                    max_tokens=50
+                )
+                matched_id = match_response["content"].strip()
+                for rest in state["restaurants"]:
+                    if rest.get("restaurantId") == matched_id:
+                        context["restaurants"] = [rest]
+                        print(f"[DEBUG] Booking Agent - LLM extracted from conversation: {rest.get('name')}")
+                        break
+                else:
                     context["restaurants"] = state["restaurants"]
-            else:
+            except Exception as e:
+                print(f"[DEBUG] Booking Agent - LLM error: {e}")
                 context["restaurants"] = state["restaurants"]
-            print(f"[DEBUG] Booking Agent - Using state restaurants: {len(context['restaurants'])} found")
+        elif state.get("restaurants"):
+            context["restaurants"] = state["restaurants"]
+            print(f"[DEBUG] Booking Agent - Using state restaurants: {len(context['restaurants'])}")
         
         # Add accumulated partial params from state (loaded from memory)
         if state.get("partial_booking_params"):

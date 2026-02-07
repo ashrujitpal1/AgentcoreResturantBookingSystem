@@ -105,7 +105,7 @@ class BookingAgent(Agent):
         correlation_id: str
     ) -> Dict[str, Any]:
         """Extract booking parameters from user message, context, and memory"""
-        extraction_prompt = """Extract booking parameters from user message.
+        extraction_prompt = """Extract booking parameters from the current message AND conversation history.
 Return JSON with ONLY the fields you can extract. Leave fields as null if not mentioned:
 {
   "restaurantId": str or null,
@@ -116,50 +116,39 @@ Return JSON with ONLY the fields you can extract. Leave fields as null if not me
   "time": str (HH:MM) or null,
   "noOfGuests": int or null,
   "cityName": str or null
-}"""
+}
+
+IMPORTANT: Check conversation history for previously mentioned information like name, phone, guests."""
         
-        # Start with partial params from previous turns (but NOT restaurant info)
+        # Start with partial params from previous turns
         params = {}
         if context and "partial_params" in context:
-            partial = context["partial_params"].copy()
-            # Keep user info but clear restaurant info (might be stale)
-            for key in ["userName", "userMobileNo", "date", "time", "noOfGuests"]:
-                if key in partial and partial[key]:
-                    params[key] = partial[key]
+            params = context["partial_params"].copy()
         
-        # Add context to help extraction
+        # Build context for LLM
         context_info = ""
         if context:
-            # Priority 1: selected_restaurant from current session
+            # Add conversation history for LLM to extract from
+            if "conversation_history" in context:
+                context_info += f"\n\nConversation History:\n{context['conversation_history']}"
+            
+            # Add restaurant context
             if "selected_restaurant" in context and context["selected_restaurant"]:
                 rest = context["selected_restaurant"]
-                context_info = f"\nContext: Restaurant '{rest.get('name')}' in {rest.get('city')}, ID: {rest.get('restaurantId')}"
-            # Priority 2: restaurants list from current search
+                context_info += f"\n\nSelected Restaurant: {rest.get('name')} (ID: {rest.get('restaurantId')}, City: {rest.get('city')})"
             elif "restaurants" in context and context["restaurants"]:
                 rest = context["restaurants"][0]
-                context_info = f"\nContext: Restaurant '{rest.get('name')}' in {rest.get('city')}, ID: {rest.get('restaurantId')}"
-            # Priority 3: Extract from conversation history
-            elif "conversation_history" in context:
-                history = context["conversation_history"]
-                # Look for restaurant mentions in conversation
-                if "Would you like to book" in history:
-                    import re
-                    match = re.search(r'Would you like to book.*?at ([^?\n]+)', history)
-                    if match:
-                        rest_name = match.group(1).strip()
-                        context_info = f"\nContext: User wants to book at '{rest_name}' (from conversation)"
-                # Also check if user mentioned a specific restaurant name in their message
-                if "restaurants" in context and context["restaurants"]:
-                    for rest in context["restaurants"]:
-                        if rest.get('name', '').lower() in user_message.lower():
-                            context_info = f"\nContext: User selected '{rest.get('name')}' (ID: {rest.get('restaurantId')}) from search results"
+                context_info += f"\n\nAvailable Restaurant: {rest.get('name')} (ID: {rest.get('restaurantId')}, City: {rest.get('city')})"
             
+            # Add memory context
             if "memory_context" in context:
-                context_info += f"\nPrevious conversation: {context['memory_context']}"
+                context_info += f"\n\nPrevious Context: {context['memory_context']}"
+            
+            # Show already collected params
             if params:
-                context_info += f"\nAlready collected: {params}"
+                context_info += f"\n\nAlready Collected: {params}"
         
-        messages = [{"role": "user", "content": [{"text": user_message + context_info}]}]
+        messages = [{"role": "user", "content": [{"text": f"Current Message: {user_message}{context_info}"}]}]
         
         response = self.invoke_llm(
             messages=messages,
@@ -170,50 +159,53 @@ Return JSON with ONLY the fields you can extract. Leave fields as null if not me
         
         try:
             import json
-            new_params = json.loads(response["content"])
+            import re
+            
+            # Clean response - remove comments and extract JSON
+            content = response["content"].strip()
+            
+            # Extract from markdown code blocks
+            json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(1)
+            
+            # Remove inline comments (// ...)
+            content = re.sub(r'//.*?(?=\n|$)', '', content)
+            # Remove multi-line comments (/* ... */)
+            content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
+            
+            print(f"[DEBUG] Booking Agent - LLM extraction response: {content}")
+            new_params = json.loads(content)
             
             # Merge new params with existing
             for key, value in new_params.items():
                 if value:  # Only update if value is not None/empty
                     params[key] = value
             
+            print(f"[DEBUG] Booking Agent - Params after LLM extraction: {params}")
+            
             # Merge with context if available (current session takes priority)
-            if context:
-                restaurant_selected = None
-                if "restaurants" in context and context["restaurants"] and len(context["restaurants"]) > 1:
-                    restaurant_list = "\n".join([f"{i+1}. {r.get('name')} (ID: {r.get('restaurantId')})" for i, r in enumerate(context["restaurants"])])
-                    match_prompt = f"User message: {user_message}\n\nAvailable restaurants:\n{restaurant_list}\n\nWhich restaurant is the user referring to? Return ONLY the restaurant ID or 'none' if unclear."
-                    
-                    match_response = self.invoke_llm(
-                        messages=[{"role": "user", "content": [{"text": match_prompt}]}],
-                        system_prompt="You are a restaurant name matcher. Return only the restaurant ID.",
-                        temperature=0.0,
-                        max_tokens=50
-                    )
-                    
-                    matched_id = match_response["content"].strip()
+            if context and "restaurants" in context and context["restaurants"]:
+                # If user mentioned restaurant name, match it
+                if len(context["restaurants"]) > 1:
                     for rest in context["restaurants"]:
-                        if rest.get("restaurantId") == matched_id:
-                            restaurant_selected = rest
+                        if rest.get('name', '').lower() in user_message.lower():
+                            params["restaurantId"] = rest.get("restaurantId")
+                            params["restaurantName"] = rest.get("name")
+                            params["cityName"] = rest.get("city")
                             break
-                
-                if restaurant_selected:
-                    params["restaurantId"] = restaurant_selected.get("restaurantId")
-                    params["restaurantName"] = restaurant_selected.get("name")
-                    params["cityName"] = restaurant_selected.get("city")
-                elif "selected_restaurant" in context and context["selected_restaurant"]:
-                    rest = context["selected_restaurant"]
-                    params["restaurantId"] = rest.get("restaurantId")
-                    params["restaurantName"] = rest.get("name")
-                    params["cityName"] = rest.get("city")
-                elif "restaurants" in context and context["restaurants"] and len(context["restaurants"]) == 1:
+                elif len(context["restaurants"]) == 1:
+                    # Only one restaurant, use it
                     rest = context["restaurants"][0]
                     params["restaurantId"] = rest.get("restaurantId")
                     params["restaurantName"] = rest.get("name")
                     params["cityName"] = rest.get("city")
-                        
+            
+            print(f"[DEBUG] Booking Agent - Final params: {params}")
             return params
         except Exception as e:
+            print(f"[DEBUG] Booking Agent - Extraction error: {e}")
+            print(f"[DEBUG] Booking Agent - LLM response was: {response.get('content', 'NO CONTENT')}")
             return params  # Return accumulated params even if extraction fails
     
     
