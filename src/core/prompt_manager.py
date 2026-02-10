@@ -31,25 +31,44 @@ class PromptManager:
         Returns:
             System prompt text
         """
-        key = f"prompts/{agent_name}/v{version}/system_prompt.md"
+        return self.load_prompt_file(agent_name, "system_prompt.md", version)
+    
+    @lru_cache(maxsize=64)
+    def load_prompt_file(self, agent_name: str, filename: str, version: str = "1.0.0") -> str:
+        """
+        Load specific prompt file from S3 with caching.
+        
+        Args:
+            agent_name: Name of agent
+            filename: Prompt filename (e.g., extraction_prompt.md)
+            version: Semantic version
+        
+        Returns:
+            Prompt text
+        """
+        key = f"prompts/{agent_name}/v{version}/{filename}"
         
         try:
             response = self.s3.get_object(Bucket=self.bucket_name, Key=key)
             prompt = response["Body"].read().decode("utf-8")
             return prompt
         except Exception as e:
-            # Fallback to local file if S3 fails
-            return self._load_local_prompt(agent_name, version)
+            # Fallback to local file
+            return self._load_local_prompt_file(agent_name, filename, version)
     
-    def _load_local_prompt(self, agent_name: str, version: str) -> str:
-        """Fallback to local prompts directory"""
-        local_path = f"prompts/{agent_name}/v{version}/system_prompt.md"
+    def _load_local_prompt_file(self, agent_name: str, filename: str, version: str) -> str:
+        """Fallback to local prompts directory for specific file"""
+        local_path = f"prompts/{agent_name}/v{version}/{filename}"
         
         try:
             with open(local_path, "r") as f:
                 return f.read()
         except FileNotFoundError:
-            raise ValueError(f"Prompt not found: {agent_name} v{version}")
+            raise ValueError(f"Prompt file not found: {agent_name}/{filename} v{version}")
+    
+    def _load_local_prompt(self, agent_name: str, version: str) -> str:
+        """Fallback to local prompts directory"""
+        return self._load_local_prompt_file(agent_name, "system_prompt.md", version)
     
     def upload_prompt(self, agent_name: str, version: str, prompt_text: str):
         """Upload new prompt version to S3"""

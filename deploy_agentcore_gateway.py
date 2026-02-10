@@ -12,7 +12,8 @@ LAMBDA_ARNS = {
     'registerUser': 'arn:aws:lambda:us-east-1:696072349808:function:registerUser-dev',
     'tokenAmountCalculation': 'arn:aws:lambda:us-east-1:696072349808:function:tokenAmountCalculation-dev',
     'bookATable': 'arn:aws:lambda:us-east-1:696072349808:function:bookATable-dev',
-    'paymentAPI': 'arn:aws:lambda:us-east-1:696072349808:function:paymentAPI-dev'
+    'paymentAPI': 'arn:aws:lambda:us-east-1:696072349808:function:paymentAPI-dev',
+    'getCurrentDateTime': 'arn:aws:lambda:us-east-1:696072349808:function:getCurrentDateTime-dev'
 }
 
 def get_ssm_parameter(name: str) -> str:
@@ -252,6 +253,17 @@ def register_lambda_tools(gateway_id: str, region: str):
                     "requestId": {"type": "string"}
                 },
                 "required": ["userId", "restaurantId", "tokenAmount", "requestId"]
+            }
+        },
+        {
+            'name': 'getCurrentDateTime',
+            'lambda_arn': LAMBDA_ARNS['getCurrentDateTime'],
+            'description': 'Get current date and time in specified timezone',
+            'schema': {
+                "type": "object",
+                "properties": {
+                    "timezone": {"type": "string", "description": "Timezone (default: UTC)"}
+                }
             }
         }
     ]

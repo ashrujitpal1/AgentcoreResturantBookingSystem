@@ -67,7 +67,7 @@ class AmazonNovaProvider(LLMProvider):
         if guardrail_id:
             request["guardrailConfig"] = {
                 "guardrailIdentifier": guardrail_id,
-                "guardrailVersion": guardrail_version
+                "guardrailVersion": "3"
             }
         
         response = self.bedrock.converse(
@@ -118,7 +118,7 @@ class AnthropicProvider(LLMProvider):
         if guardrail_id:
             request["guardrailConfig"] = {
                 "guardrailIdentifier": guardrail_id,
-                "guardrailVersion": guardrail_version
+                "guardrailVersion": "3"
             }
         
         response = self.bedrock.converse(

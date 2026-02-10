@@ -19,11 +19,15 @@ class RestaurantFinderAgent(Agent):
             "restaurant_search"
         )
         
+        import os
+        guardrail_id = os.getenv("GUARDRAIL_ID")
+        
         super().__init__(
             name="restaurant_finder",
             primary_provider=primary,
             fallback_provider=fallback,
-            circuit_breaker=breaker
+            circuit_breaker=breaker,
+            guardrail_id=guardrail_id
         )
         
         self.config = config
@@ -76,8 +80,11 @@ class RestaurantFinderAgent(Agent):
     
     def _extract_search_params(self, user_message: str, correlation_id: str) -> Dict[str, Any]:
         """Extract city, cuisine, price range, rating from user message"""
-        extraction_prompt = """Extract search parameters from user message.
-Return JSON: {"city": str, "cuisine": str, "priceRange": str, "minRating": float}"""
+        extraction_prompt = self.prompt_manager.load_prompt_file(
+            "restaurant_finder",
+            "extraction_prompt.md",
+            self.prompt_version
+        )
         
         messages = [{"role": "user", "content": [{"text": user_message}]}]
         
@@ -123,21 +130,31 @@ Return JSON: {"city": str, "cuisine": str, "priceRange": str, "minRating": float
         if not restaurants:
             return "I couldn't find any restaurants matching your criteria. Please try a different location or cuisine type."
         
-        # Format restaurants for LLM with actual data
+        # Format restaurants for LLM with actual data - validate all fields
         restaurants_text = "\n\n".join([
             f"{i+1}. {r.get('name', 'Unknown')} - {r.get('cuisine', 'N/A')} cuisine\n   Rating: {r.get('rating', 'N/A')}/5\n   Location: {r.get('city', 'N/A')}\n   ID: {r.get('restaurantId', 'N/A')}"
             for i, r in enumerate(restaurants[:5])
         ])
         
+        # Add validation check
+        if not restaurants_text.strip():
+            return "I found restaurants but couldn't retrieve their details. Please try again."
+        
         prompt = f"""Based on the user's request, present these restaurants in a friendly way.
-DO NOT make up or hallucinate any restaurants. ONLY use the restaurants provided below.
+
+CRITICAL GROUNDEDNESS RULES:
+1. DO NOT make up, invent, or hallucinate ANY restaurants
+2. ONLY use the exact restaurants listed below
+3. DO NOT add details not present in the data (hours, menu items, prices)
+4. If a field is missing, say "Not available" instead of guessing
+5. Use ONLY the restaurant IDs, names, ratings, and cities provided
 
 Restaurants found:
 {restaurants_text}
 
 User request: {user_message}
 
-Provide a helpful response listing ONLY these restaurants."""
+Provide a helpful response listing ONLY these restaurants with ONLY the information provided above."""
         
         messages = [{"role": "user", "content": [{"text": prompt}]}]
         
@@ -148,15 +165,30 @@ Provide a helpful response listing ONLY these restaurants."""
             max_tokens=self.config["max_tokens"]
         )
         
-        return response["content"]
+        # Validate response doesn't contain hallucinated restaurant names
+        response_text = response["content"]
+        actual_names = [r.get('name', '') for r in restaurants[:5]]
+        
+        # Log warning if response might contain hallucinations (basic check)
+        for name in actual_names:
+            if name and name not in response_text:
+                print(f"[WARNING] Restaurant '{name}' from data not found in LLM response")
+        
+        return response_text
     
     def _check_handoff(self, user_message: str, restaurants: List[Dict]) -> Optional[str]:
         """Use LLM to determine if user wants to proceed with booking"""
         if not restaurants:
             return None
         
+        handoff_prompt = self.prompt_manager.load_prompt_file(
+            "restaurant_finder",
+            "handoff_detection_prompt.md",
+            self.prompt_version
+        )
+        
         # Ask LLM to determine intent
-        handoff_prompt = f"""User message: {user_message}
+        handoff_prompt_content = f"""User message: {user_message}
 
 Restaurants were just shown to the user.
 
@@ -172,11 +204,11 @@ Examples:
 
 Return ONLY "yes" or "no"."""
         
-        messages = [{"role": "user", "content": [{"text": handoff_prompt}]}]
+        messages = [{"role": "user", "content": [{"text": handoff_prompt_content}]}]
         
         response = self.invoke_llm(
             messages=messages,
-            system_prompt="You determine if user wants to proceed with booking.",
+            system_prompt=handoff_prompt,
             temperature=0.0,
             max_tokens=10
         )

@@ -20,7 +20,8 @@ class Agent(ABC):
         name: str,
         primary_provider: LLMProvider,
         fallback_provider: Optional[LLMProvider] = None,
-        circuit_breaker: Optional[CircuitBreaker] = None
+        circuit_breaker: Optional[CircuitBreaker] = None,
+        guardrail_id: Optional[str] = None
     ):
         """
         Dependency Inversion: Inject LLM providers via constructor
@@ -29,6 +30,7 @@ class Agent(ABC):
         self.primary_provider = primary_provider
         self.fallback_provider = fallback_provider
         self.circuit_breaker = circuit_breaker
+        self.guardrail_id = guardrail_id
     
     @abstractmethod
     def process(
@@ -51,21 +53,24 @@ class Agent(ABC):
         max_tokens: int = 2000
     ) -> Dict[str, Any]:
         """
-        Invoke LLM with circuit breaker fallback.
+        Invoke LLM with circuit breaker fallback and guardrail protection.
         Primary fails → automatically use fallback provider.
         """
         if self.circuit_breaker and self.fallback_provider:
             return self.circuit_breaker.call(
                 lambda: self.primary_provider.invoke(
-                    messages, system_prompt, temperature, max_tokens
+                    messages, system_prompt, temperature, max_tokens,
+                    guardrail_id=self.guardrail_id, guardrail_version="1"
                 ),
                 lambda: self.fallback_provider.invoke(
-                    messages, system_prompt, temperature, max_tokens
+                    messages, system_prompt, temperature, max_tokens,
+                    guardrail_id=self.guardrail_id, guardrail_version="1"
                 )
             )
         else:
             return self.primary_provider.invoke(
-                messages, system_prompt, temperature, max_tokens
+                messages, system_prompt, temperature, max_tokens,
+                guardrail_id=self.guardrail_id, guardrail_version="1"
             )
     
     def generate_request_id(self, correlation_id: str, operation: str) -> str:

@@ -95,6 +95,16 @@ class RestaurantBookingWorkflow:
         # Call Strands agent with context (includes last_response from memory)
         result = self.intent_classifier.process(user_message, correlation_id, state.get('context'))
         
+        intent = result.get("intent")
+        
+        # Handle out-of-scope requests immediately
+        if intent in ["out_of_scope", "invalid", None]:
+            return {
+                "intent": intent,
+                "current_agent": "scope_validator",
+                "final_response": "I'm a restaurant booking assistant. I can help you search for restaurants, make reservations, and process payments. I cannot answer general questions or provide information outside of restaurant booking. How can I help you find or book a restaurant?"
+            }
+        
         # Preserve existing context (e.g., selected_restaurant)
         existing_context = state.get("context") or {}
         new_context = result.get("extracted_entities", {})
@@ -240,12 +250,18 @@ Which restaurant is mentioned? Return ONLY the restaurant ID."""
         
         if result.get("success"):
             ai_message = AIMessage(content=result.get("content"))
+            
+            # Mark booking as completed in context to prevent duplicate bookings
+            updated_context = state.get("context", {})
+            updated_context["booking_completed"] = True
+            
             return {
                 "messages": [ai_message],
                 "booking_id": result.get("booking_details", {}).get("booking_id"),
                 "token_amount": result.get("booking_details", {}).get("token_amount"),
                 "compensation_stack": result.get("compensation_log", []),
                 "current_agent": "booking_agent",
+                "context": updated_context,
                 "final_response": result.get("content")
             }
         else:
@@ -258,6 +274,12 @@ Which restaurant is mentioned? Return ONLY the restaurant ID."""
     
     def _error_handler_node(self, state: RestaurantBookingState) -> Dict[str, Any]:
         """Handle errors with graceful degradation"""
+        # Check if this is a scope validation (not a real error)
+        if state.get("current_agent") == "scope_validator":
+            return {
+                "final_response": state.get("final_response")
+            }
+        
         error = state.get("error", "Unknown error")
         compensation_log = state.get("compensation_stack", [])
         
@@ -282,6 +304,10 @@ Please try again or contact support."""
         intent = state.get("intent")
         
         if state.get("error"):
+            return "error"
+        
+        # Handle out-of-scope requests
+        if intent in ["out_of_scope", "invalid", None] or state.get("current_agent") == "scope_validator":
             return "error"
         
         if intent == "search":
@@ -328,9 +354,11 @@ Please try again or contact support."""
         memory_data = self._retrieve_memory(user_id, session_id)
         memory_params = memory_data.get('booking_params', {})
         conversation_history = memory_data.get('conversation_history', '')
+        booking_completed = memory_data.get('booking_completed', False)
         
         print(f"[DEBUG] Memory params: {memory_params}")
         print(f"[DEBUG] Conversation history: {conversation_history[:200] if conversation_history else 'None'}...")
+        print(f"[DEBUG] Booking completed: {booking_completed}")
         
         # Initialize state with memory data as fallback
         initial_state = RestaurantBookingState(
@@ -355,8 +383,9 @@ Please try again or contact support."""
             next_agent=None,
             context={
                 'selected_restaurant': selected_restaurant,
-                'conversation_history': conversation_history
-            } if (selected_restaurant or conversation_history) else {},
+                'conversation_history': conversation_history,
+                'booking_completed': booking_completed
+            } if (selected_restaurant or conversation_history or booking_completed) else {},
             final_response=None
         )
         
@@ -378,7 +407,7 @@ Please try again or contact support."""
     def _retrieve_memory(self, user_id: str, session_id: str) -> Dict[str, Any]:
         """Retrieve booking state AND full conversation history from AgentCore Memory"""
         if not self.memory_id:
-            return {'booking_params': {}, 'conversation_history': ''}
+            return {'booking_params': {}, 'conversation_history': '', 'booking_completed': False}
         
         try:
             response = self.memory_client.list_events(
@@ -396,13 +425,23 @@ Please try again or contact support."""
             
             # Extract booking params
             booking_params = {}
+            booking_completed = False
             for event in reversed(events):
-                if 'booking_params_b64' in event.get('metadata', {}):
+                metadata = event.get('metadata', {})
+                
+                # Check if booking was completed
+                if 'booking_completed' in metadata:
+                    booking_completed = metadata['booking_completed'].get('stringValue') == 'true'
+                
+                # Extract booking params
+                if 'booking_params_b64' in metadata:
                     try:
-                        params_b64 = event['metadata']['booking_params_b64'].get('stringValue', '')
+                        params_b64 = metadata['booking_params_b64'].get('stringValue', '')
                         booking_params = json.loads(base64.b64decode(params_b64).decode())
-                        break
                     except: pass
+                
+                if booking_completed:
+                    break
             
             # Build full conversation history from all events
             conversation_turns = []
@@ -415,10 +454,14 @@ Please try again or contact support."""
             
             conversation_history = "\n".join(conversation_turns)
             
-            return {'booking_params': booking_params, 'conversation_history': conversation_history}
+            return {
+                'booking_params': booking_params,
+                'conversation_history': conversation_history,
+                'booking_completed': booking_completed
+            }
         except Exception as e:
             print(f"[DEBUG] Memory retrieval exception: {e}")
-            return {'booking_params': {}, 'conversation_history': ''}
+            return {'booking_params': {}, 'conversation_history': '', 'booking_completed': False}
     
     def _store_memory(
         self,
@@ -444,6 +487,7 @@ Please try again or contact support."""
             # Only store booking params when booking SUCCEEDS
             if metadata.get('booking_id'):  # Booking completed successfully
                 memory_metadata['booking_id'] = {'stringValue': metadata['booking_id']}
+                memory_metadata['booking_completed'] = {'stringValue': 'true'}  # Flag to prevent duplicate bookings
                 # Store final booking params only on success
                 if metadata.get('partial_booking_params'):
                     params_json = json.dumps(metadata['partial_booking_params'])

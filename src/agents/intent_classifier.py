@@ -19,11 +19,15 @@ class IntentClassifierAgent(Agent):
             "intent_classification"
         )
         
+        import os
+        guardrail_id = os.getenv("GUARDRAIL_ID")
+        
         super().__init__(
             name="intent_classifier",
             primary_provider=primary,
             fallback_provider=fallback,
-            circuit_breaker=breaker
+            circuit_breaker=breaker,
+            guardrail_id=guardrail_id
         )
         
         self.config = config

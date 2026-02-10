@@ -18,11 +18,16 @@ class BookingAgent(Agent):
             "booking_validation"
         )
         
+        # Get guardrail ID from environment
+        import os
+        guardrail_id = os.getenv("GUARDRAIL_ID")
+        
         super().__init__(
             name="booking_agent",
             primary_provider=primary,
             fallback_provider=fallback,
-            circuit_breaker=breaker
+            circuit_breaker=breaker,
+            guardrail_id=guardrail_id
         )
         
         self.config = config
@@ -40,12 +45,20 @@ class BookingAgent(Agent):
         Execute SAGA workflow for booking with compensation.
         
         SAGA Steps:
-        1. User validation
-        2. User registration (if needed)
-        3. Token calculation
-        4. Table booking
-        5. Payment processing
+        1. Session booking limit check
+        2. User validation
+        3. User registration (if needed)
+        4. Token calculation
+        5. Table booking
+        6. Payment processing
         """
+        # Check if user already booked in this session
+        if context and context.get("booking_completed"):
+            return {
+                "success": False,
+                "content": "You have already completed a booking in this session. To make another reservation, please log out and log back in. This ensures each booking is properly tracked and secured."
+            }
+        
         # Validate input
         is_valid, error = self.validate_input(user_message)
         if not is_valid:
@@ -105,20 +118,11 @@ class BookingAgent(Agent):
         correlation_id: str
     ) -> Dict[str, Any]:
         """Extract booking parameters from user message, context, and memory"""
-        extraction_prompt = """Extract booking parameters from the current message AND conversation history.
-Return JSON with ONLY the fields you can extract. Leave fields as null if not mentioned:
-{
-  "restaurantId": str or null,
-  "restaurantName": str or null,
-  "userName": str or null,
-  "userMobileNo": str or null,
-  "date": str (YYYY-MM-DD) or null,
-  "time": str (HH:MM) or null,
-  "noOfGuests": int or null,
-  "cityName": str or null
-}
-
-IMPORTANT: Check conversation history for previously mentioned information like name, phone, guests."""
+        extraction_prompt = self.prompt_manager.load_prompt_file(
+            "booking_agent",
+            "extraction_prompt.md",
+            self.prompt_version
+        )
         
         # Start with partial params from previous turns
         params = {}
@@ -202,12 +206,75 @@ IMPORTANT: Check conversation history for previously mentioned information like 
                     params["cityName"] = rest.get("city")
             
             print(f"[DEBUG] Booking Agent - Final params: {params}")
+            
+            # Normalize date if present
+            if params.get("date"):
+                params["date"] = self._normalize_date(params["date"], correlation_id)
+                print(f"[DEBUG] Booking Agent - Normalized date: {params['date']}")
+            
             return params
         except Exception as e:
             print(f"[DEBUG] Booking Agent - Extraction error: {e}")
             print(f"[DEBUG] Booking Agent - LLM response was: {response.get('content', 'NO CONTENT')}")
             return params  # Return accumulated params even if extraction fails
     
+    
+    def _normalize_date(self, date_str: str, correlation_id: str) -> str:
+        """Convert relative dates to YYYY-MM-DD using getCurrentDateTime tool"""
+        if not date_str or not isinstance(date_str, str):
+            return date_str
+        
+        # Check if already in YYYY-MM-DD format
+        import re
+        if re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
+            return date_str
+        
+        # Check if date is relative
+        relative_terms = ['today', 'tomorrow', 'tonight', 'next', 'this', 'week', 'weekend', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        if any(term in date_str.lower() for term in relative_terms):
+            print(f"[DEBUG] Booking Agent - Detected relative date: {date_str}")
+            
+            # Call getCurrentDateTime tool
+            tool = self.mcp_tools.get("getCurrentDateTime")
+            if tool:
+                try:
+                    result = tool(timezone="America/New_York")
+                    current_date = result.get("currentDate") or result.get("date")
+                    current_time = result.get("currentTime") or result.get("time")
+                    
+                    print(f"[DEBUG] Booking Agent - getCurrentDateTime returned: {current_date} {current_time}")
+                    
+                    if current_date:
+                        # Use LLM to calculate relative date
+                        date_conversion_prompt = self.prompt_manager.load_prompt_file(
+                            "booking_agent",
+                            "date_conversion_prompt.md",
+                            self.prompt_version
+                        )
+                        
+                        prompt = f"""Current date is {current_date}. Convert the relative date '{date_str}' to YYYY-MM-DD format.
+Return ONLY the date in YYYY-MM-DD format, nothing else."""
+                        
+                        messages = [{"role": "user", "content": [{"text": prompt}]}]
+                        response = self.invoke_llm(
+                            messages=messages,
+                            system_prompt=date_conversion_prompt,
+                            temperature=0.0,
+                            max_tokens=50
+                        )
+                        
+                        normalized = response["content"].strip()
+                        # Extract date if wrapped in text
+                        date_match = re.search(r'\d{4}-\d{2}-\d{2}', normalized)
+                        if date_match:
+                            normalized = date_match.group(0)
+                        
+                        print(f"[DEBUG] Booking Agent - Normalized '{date_str}' to '{normalized}'")
+                        return normalized
+                except Exception as e:
+                    print(f"[DEBUG] Booking Agent - Date normalization error: {e}")
+        
+        return date_str
     
     def _check_missing_fields(self, params: Dict[str, Any]) -> List[str]:
         """Check which required fields are missing"""
@@ -408,11 +475,14 @@ IMPORTANT: Check conversation history for previously mentioned information like 
         return log
     
     def _format_success_message(self, result: Dict) -> str:
-        """Format success message"""
+        """Format success message with actual data from result"""
+        booking_id = result.get('booking_id') or result.get('bookingId') or 'N/A'
+        token_amount = result.get('token_amount') or result.get('tokenAmount') or 0.0
+        
         return f"""✅ Booking Confirmed!
 
-📋 Booking ID: {result['booking_id']}
-💰 Deposit Paid: ${result['token_amount']}
+📋 Booking ID: {booking_id}
+💰 Deposit Paid: ${token_amount}
 📧 Confirmation sent"""
     
     def _format_failure_message(self, result: Dict, compensation_log: List[str]) -> str:

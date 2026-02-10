@@ -45,6 +45,9 @@ class MCPToolClient:
     
     def payment_api(self, **kwargs) -> Dict[str, Any]:
         return self.invoke_lambda("paymentAPI-dev", kwargs)
+    
+    def get_current_datetime(self, **kwargs) -> Dict[str, Any]:
+        return self.invoke_lambda("getCurrentDateTime-dev", kwargs)
 
 
 def get_mcp_tools() -> Dict[str, Any]:
@@ -58,5 +61,6 @@ def get_mcp_tools() -> Dict[str, Any]:
         "registerUser": client.register_user,
         "tokenAmountCalculation": client.token_amount_calculation,
         "bookATable": client.book_a_table,
-        "paymentAPI": client.payment_api
+        "paymentAPI": client.payment_api,
+        "getCurrentDateTime": client.get_current_datetime
     }

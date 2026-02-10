@@ -127,6 +127,15 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: IdempotencyCache
 
+  GetCurrentDateTimeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "getCurrentDateTime-${Environment}"
+      CodeUri: src/lambda/
+      Handler: get_current_datetime.lambda_handler
+      Timeout: 3
+      Policies: []
+
 Outputs:
   # Lambda Function ARNs for AgentCore Gateway registration
   FetchRestaurantDetailsFunctionArn:
@@ -176,3 +185,9 @@ Outputs:
     Value: !GetAtt PaymentAPIFunction.Arn
     Export:
       Name: !Sub "${AWS::StackName}-PaymentAPIFunction"
+
+  GetCurrentDateTimeFunctionArn:
+    Description: "Get Current Date Time Lambda Function ARN"
+    Value: !GetAtt GetCurrentDateTimeFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-GetCurrentDateTimeFunction"
