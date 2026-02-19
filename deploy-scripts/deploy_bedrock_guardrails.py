@@ -92,11 +92,11 @@ def create_guardrail():
             ]
         },
         
-        # Sensitive information filters (PII blocking)
+        # Sensitive information filters - ANONYMIZE phone/email for booking system
         "sensitiveInformationPolicyConfig": {
             "piiEntitiesConfig": [
-                {"type": "EMAIL", "action": "BLOCK"},
-                {"type": "PHONE", "action": "BLOCK"},
+                {"type": "EMAIL", "action": "ANONYMIZE"},  # Allow but mask in logs
+                {"type": "PHONE", "action": "ANONYMIZE"},  # Allow but mask in logs
                 {"type": "CREDIT_DEBIT_CARD_NUMBER", "action": "BLOCK"},
                 {"type": "US_SOCIAL_SECURITY_NUMBER", "action": "BLOCK"},
                 {"type": "US_BANK_ACCOUNT_NUMBER", "action": "BLOCK"}

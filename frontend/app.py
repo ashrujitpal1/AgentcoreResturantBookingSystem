@@ -26,6 +26,8 @@ if "selected_restaurant" not in st.session_state:
     st.session_state.selected_restaurant = None
 if "debug_mode" not in st.session_state:
     st.session_state.debug_mode = False
+if "is_first_message" not in st.session_state:
+    st.session_state.is_first_message = True
 
 with st.sidebar:
     st.title("🍽️ Restaurant Booking")
@@ -51,6 +53,7 @@ with st.sidebar:
         st.session_state.restaurants = []
         st.session_state.selected_restaurant = None
         st.session_state.session_id = f"req_{uuid.uuid4()}"
+        st.session_state.is_first_message = True
         st.rerun()
     
     st.markdown("---")
@@ -63,6 +66,7 @@ with st.sidebar:
         st.session_state.restaurants = []
         st.session_state.selected_restaurant = None
         st.session_state.session_id = f"req_{uuid.uuid4()}"
+        st.session_state.is_first_message = True
         st.success("New session started!")
         st.rerun()
 
@@ -71,6 +75,29 @@ st.title("🍽️ Restaurant Booking Assistant")
 if not st.session_state.user_id or not st.session_state.get('phone'):
     st.warning("⚠️ Please enter your User ID and Phone Number in the sidebar to start.")
     st.stop()
+
+# Show greeting on first load
+if st.session_state.is_first_message and st.session_state.user_id:
+    with st.chat_message("assistant"):
+        with st.spinner("Loading your preferences..."):
+            try:
+                if 'workflow' not in st.session_state:
+                    st.session_state.workflow = RestaurantBookingWorkflow(get_mcp_tools())
+                
+                greeting_result = st.session_state.workflow.invoke(
+                    user_message="",
+                    user_id=st.session_state.user_id,
+                    session_id=st.session_state.session_id,
+                    phone=st.session_state.get('phone'),
+                    is_first_message=True
+                )
+                
+                greeting_msg = greeting_result.get('final_response', '👋 Welcome!')
+                st.markdown(greeting_msg)
+                st.session_state.messages.append({"role": "assistant", "content": greeting_msg})
+                st.session_state.is_first_message = False
+            except Exception as e:
+                st.error(f"Error loading preferences: {e}")
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -98,7 +125,9 @@ if prompt := st.chat_input("Ask about restaurants or make a booking..."):
                     user_id=st.session_state.user_id,
                     session_id=st.session_state.session_id,
                     restaurants=st.session_state.restaurants,
-                    selected_restaurant=st.session_state.selected_restaurant
+                    selected_restaurant=st.session_state.selected_restaurant,
+                    phone=st.session_state.get('phone'),
+                    is_first_message=False
                 )
                 
                 # Debug info

@@ -19,8 +19,30 @@ def get_or_create_user_pool(cognito, pool_name, region):
             return pool["Id"]
     
     print(f"🆕 Creating new user pool: {pool_name}")
-    created = cognito.create_user_pool(PoolName=pool_name)
+    created = cognito.create_user_pool(
+        PoolName=pool_name,
+        Schema=[
+            {
+                'Name': 'email',
+                'AttributeDataType': 'String',
+                'Required': False,
+                'Mutable': True
+            },
+            {
+                'Name': 'tier',
+                'AttributeDataType': 'String',
+                'DeveloperOnlyAttribute': False,
+                'Mutable': True,
+                'Required': False,
+                'StringAttributeConstraints': {
+                    'MinLength': '4',
+                    'MaxLength': '10'
+                }
+            }
+        ]
+    )
     user_pool_id = created["UserPool"]["Id"]
+    print(f"✅ Created user pool with custom:tier attribute")
     
     # Create domain
     domain = user_pool_id.replace("_", "").lower()
@@ -116,6 +138,25 @@ def setup_cognito(region_name: str = "us-east-1"):
     print(f"   Client ID: {client_id}")
     print(f"   Discovery URL: {discovery_url}")
     print(f"   Scope: {scope_string}")
+    
+    # Update .env file
+    import os
+    env_path = '../.env' if os.path.exists('../.env') else '.env'
+    if os.path.exists(env_path):
+        with open(env_path, 'r') as f:
+            lines = f.readlines()
+        
+        with open(env_path, 'w') as f:
+            for line in lines:
+                if line.startswith('USER_POOL_ID='):
+                    f.write(f'USER_POOL_ID={user_pool_id}\n')
+                elif line.startswith('CLIENT_ID='):
+                    f.write(f'CLIENT_ID={client_id}\n')
+                elif line.startswith('DISCOVERY_URL='):
+                    f.write(f'DISCOVERY_URL={discovery_url}\n')
+                else:
+                    f.write(line)
+        print(f"\n✅ Updated .env file with new User Pool ID")
     
     return {
         "user_pool_id": user_pool_id,

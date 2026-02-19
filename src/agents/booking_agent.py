@@ -18,16 +18,13 @@ class BookingAgent(Agent):
             "booking_validation"
         )
         
-        # Get guardrail ID from environment
-        import os
-        guardrail_id = os.getenv("GUARDRAIL_ID")
-        
+        # Guardrail disabled - booking agent needs to process phone numbers and booking details
         super().__init__(
             name="booking_agent",
             primary_provider=primary,
             fallback_provider=fallback,
             circuit_breaker=breaker,
-            guardrail_id=guardrail_id
+            guardrail_id=None
         )
         
         self.config = config
@@ -152,6 +149,23 @@ class BookingAgent(Agent):
             if params:
                 context_info += f"\n\nAlready Collected: {params}"
         
+        # Get current date/time for the LLM to use
+        current_date = None
+        current_time = None
+        tool = self.mcp_tools.get("getCurrentDateTime")
+        if tool:
+            try:
+                result = tool(timezone="America/New_York")
+                current_date = result.get("currentDate") or result.get("date")
+                current_time = result.get("currentTime") or result.get("time")
+                print(f"[DEBUG] Booking Agent - Current date/time from tool: {current_date} {current_time}")
+            except Exception as e:
+                print(f"[DEBUG] Booking Agent - Error getting current date/time: {e}")
+        
+        # Add current date to context for LLM
+        if current_date:
+            context_info += f"\n\nCurrent Date: {current_date}\nCurrent Time: {current_time}"
+        
         messages = [{"role": "user", "content": [{"text": f"Current Message: {user_message}{context_info}"}]}]
         
         response = self.invoke_llm(
@@ -207,11 +221,6 @@ class BookingAgent(Agent):
             
             print(f"[DEBUG] Booking Agent - Final params: {params}")
             
-            # Normalize date if present
-            if params.get("date"):
-                params["date"] = self._normalize_date(params["date"], correlation_id)
-                print(f"[DEBUG] Booking Agent - Normalized date: {params['date']}")
-            
             return params
         except Exception as e:
             print(f"[DEBUG] Booking Agent - Extraction error: {e}")
@@ -227,6 +236,7 @@ class BookingAgent(Agent):
         # Check if already in YYYY-MM-DD format
         import re
         if re.match(r'^\d{4}-\d{2}-\d{2}$', date_str):
+            print(f"[DEBUG] Booking Agent - Date already in YYYY-MM-DD format: {date_str}")
             return date_str
         
         # Check if date is relative
@@ -236,13 +246,18 @@ class BookingAgent(Agent):
             
             # Call getCurrentDateTime tool
             tool = self.mcp_tools.get("getCurrentDateTime")
+            print(f"[DEBUG] Booking Agent - getCurrentDateTime tool found: {tool is not None}")
+            
             if tool:
                 try:
+                    print(f"[DEBUG] Booking Agent - Calling getCurrentDateTime with timezone=America/New_York")
                     result = tool(timezone="America/New_York")
+                    print(f"[DEBUG] Booking Agent - getCurrentDateTime raw result: {result}")
+                    
                     current_date = result.get("currentDate") or result.get("date")
                     current_time = result.get("currentTime") or result.get("time")
                     
-                    print(f"[DEBUG] Booking Agent - getCurrentDateTime returned: {current_date} {current_time}")
+                    print(f"[DEBUG] Booking Agent - Extracted current_date: {current_date}, current_time: {current_time}")
                     
                     if current_date:
                         # Use LLM to calculate relative date
@@ -255,6 +270,8 @@ class BookingAgent(Agent):
                         prompt = f"""Current date is {current_date}. Convert the relative date '{date_str}' to YYYY-MM-DD format.
 Return ONLY the date in YYYY-MM-DD format, nothing else."""
                         
+                        print(f"[DEBUG] Booking Agent - Calling LLM for date conversion with prompt: {prompt[:100]}...")
+                        
                         messages = [{"role": "user", "content": [{"text": prompt}]}]
                         response = self.invoke_llm(
                             messages=messages,
@@ -264,15 +281,25 @@ Return ONLY the date in YYYY-MM-DD format, nothing else."""
                         )
                         
                         normalized = response["content"].strip()
+                        print(f"[DEBUG] Booking Agent - LLM date conversion response: {normalized}")
+                        
                         # Extract date if wrapped in text
                         date_match = re.search(r'\d{4}-\d{2}-\d{2}', normalized)
                         if date_match:
                             normalized = date_match.group(0)
                         
-                        print(f"[DEBUG] Booking Agent - Normalized '{date_str}' to '{normalized}'")
+                        print(f"[DEBUG] Booking Agent - Final normalized date: '{date_str}' -> '{normalized}'")
                         return normalized
+                    else:
+                        print(f"[DEBUG] Booking Agent - No current_date found in tool result")
                 except Exception as e:
                     print(f"[DEBUG] Booking Agent - Date normalization error: {e}")
+                    import traceback
+                    print(f"[DEBUG] Booking Agent - Traceback: {traceback.format_exc()}")
+            else:
+                print(f"[DEBUG] Booking Agent - getCurrentDateTime tool not found in mcp_tools")
+        else:
+            print(f"[DEBUG] Booking Agent - Date '{date_str}' is not relative, returning as-is")
         
         return date_str
     

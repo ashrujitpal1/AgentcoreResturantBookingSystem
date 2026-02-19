@@ -1,0 +1,2325 @@
+{
+  "current_date": "2026-02-10 06:00:00",
+  "forecast_days": 7,
+  "time_slots_per_day": 4,
+  "time_slots": [
+    "Morning",
+    "Afternoon",
+    "Evening",
+    "Night"
+  ],
+  "forecast": {
+    "Austin": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 57,
+            "condition": "Stormy",
+            "humidity": 34,
+            "wind_speed": 19
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 83,
+            "condition": "Partly Cloudy",
+            "humidity": 78,
+            "wind_speed": 6
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 92,
+            "condition": "Cloudy",
+            "humidity": 68,
+            "wind_speed": 6
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 86,
+            "condition": "Rainy",
+            "humidity": 56,
+            "wind_speed": 13
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 75,
+            "condition": "Cloudy",
+            "humidity": 57,
+            "wind_speed": 25
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 50,
+            "condition": "Stormy",
+            "humidity": 50,
+            "wind_speed": 25
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 81,
+            "condition": "Sunny",
+            "humidity": 87,
+            "wind_speed": 18
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 92,
+            "condition": "Sunny",
+            "humidity": 74,
+            "wind_speed": 20
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 91,
+            "condition": "Partly Cloudy",
+            "humidity": 53,
+            "wind_speed": 21
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 94,
+            "condition": "Stormy",
+            "humidity": 81,
+            "wind_speed": 14
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 95,
+            "condition": "Partly Cloudy",
+            "humidity": 31,
+            "wind_speed": 22
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 61,
+            "condition": "Rainy",
+            "humidity": 47,
+            "wind_speed": 11
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 71,
+            "condition": "Sunny",
+            "humidity": 55,
+            "wind_speed": 14
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 59,
+            "condition": "Foggy",
+            "humidity": 42,
+            "wind_speed": 22
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 86,
+            "condition": "Rainy",
+            "humidity": 43,
+            "wind_speed": 21
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 79,
+            "condition": "Partly Cloudy",
+            "humidity": 90,
+            "wind_speed": 6
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 59,
+            "condition": "Foggy",
+            "humidity": 62,
+            "wind_speed": 19
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 51,
+            "condition": "Rainy",
+            "humidity": 87,
+            "wind_speed": 8
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 51,
+            "condition": "Stormy",
+            "humidity": 54,
+            "wind_speed": 17
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 53,
+            "condition": "Foggy",
+            "humidity": 43,
+            "wind_speed": 19
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 65,
+            "condition": "Sunny",
+            "humidity": 63,
+            "wind_speed": 13
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 95,
+            "condition": "Foggy",
+            "humidity": 75,
+            "wind_speed": 21
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 60,
+            "condition": "Rainy",
+            "humidity": 70,
+            "wind_speed": 21
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 63,
+            "condition": "Stormy",
+            "humidity": 86,
+            "wind_speed": 16
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "Austin",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 79,
+            "condition": "Rainy",
+            "humidity": 52,
+            "wind_speed": 10
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 84,
+            "condition": "Partly Cloudy",
+            "humidity": 69,
+            "wind_speed": 6
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 66,
+            "condition": "Rainy",
+            "humidity": 81,
+            "wind_speed": 18
+          },
+          {
+            "city": "Austin",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 82,
+            "condition": "Stormy",
+            "humidity": 50,
+            "wind_speed": 23
+          }
+        ]
+      }
+    ],
+    "Boston": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 79,
+            "condition": "Foggy",
+            "humidity": 62,
+            "wind_speed": 23
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 80,
+            "condition": "Cloudy",
+            "humidity": 82,
+            "wind_speed": 23
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 76,
+            "condition": "Stormy",
+            "humidity": 55,
+            "wind_speed": 5
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 89,
+            "condition": "Stormy",
+            "humidity": 76,
+            "wind_speed": 14
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 79,
+            "condition": "Cloudy",
+            "humidity": 89,
+            "wind_speed": 11
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 82,
+            "condition": "Stormy",
+            "humidity": 37,
+            "wind_speed": 23
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 89,
+            "condition": "Foggy",
+            "humidity": 60,
+            "wind_speed": 9
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 54,
+            "condition": "Sunny",
+            "humidity": 41,
+            "wind_speed": 5
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 83,
+            "condition": "Partly Cloudy",
+            "humidity": 36,
+            "wind_speed": 8
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 88,
+            "condition": "Cloudy",
+            "humidity": 64,
+            "wind_speed": 12
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 52,
+            "condition": "Stormy",
+            "humidity": 47,
+            "wind_speed": 5
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 57,
+            "condition": "Foggy",
+            "humidity": 73,
+            "wind_speed": 19
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 82,
+            "condition": "Sunny",
+            "humidity": 47,
+            "wind_speed": 17
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 86,
+            "condition": "Foggy",
+            "humidity": 80,
+            "wind_speed": 24
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 54,
+            "condition": "Stormy",
+            "humidity": 52,
+            "wind_speed": 21
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 71,
+            "condition": "Stormy",
+            "humidity": 37,
+            "wind_speed": 14
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 85,
+            "condition": "Cloudy",
+            "humidity": 53,
+            "wind_speed": 7
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 51,
+            "condition": "Partly Cloudy",
+            "humidity": 53,
+            "wind_speed": 6
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 50,
+            "condition": "Rainy",
+            "humidity": 88,
+            "wind_speed": 14
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 59,
+            "condition": "Stormy",
+            "humidity": 88,
+            "wind_speed": 18
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 84,
+            "condition": "Stormy",
+            "humidity": 86,
+            "wind_speed": 14
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 79,
+            "condition": "Foggy",
+            "humidity": 43,
+            "wind_speed": 20
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 63,
+            "condition": "Cloudy",
+            "humidity": 39,
+            "wind_speed": 10
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 92,
+            "condition": "Stormy",
+            "humidity": 54,
+            "wind_speed": 23
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "Boston",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 84,
+            "condition": "Partly Cloudy",
+            "humidity": 82,
+            "wind_speed": 11
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 72,
+            "condition": "Stormy",
+            "humidity": 53,
+            "wind_speed": 5
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 72,
+            "condition": "Cloudy",
+            "humidity": 79,
+            "wind_speed": 17
+          },
+          {
+            "city": "Boston",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 52,
+            "condition": "Stormy",
+            "humidity": 37,
+            "wind_speed": 17
+          }
+        ]
+      }
+    ],
+    "Chicago": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 56,
+            "condition": "Sunny",
+            "humidity": 36,
+            "wind_speed": 8
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 86,
+            "condition": "Cloudy",
+            "humidity": 39,
+            "wind_speed": 25
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 95,
+            "condition": "Rainy",
+            "humidity": 52,
+            "wind_speed": 21
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 69,
+            "condition": "Rainy",
+            "humidity": 53,
+            "wind_speed": 13
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 91,
+            "condition": "Sunny",
+            "humidity": 63,
+            "wind_speed": 6
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 80,
+            "condition": "Stormy",
+            "humidity": 73,
+            "wind_speed": 25
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 88,
+            "condition": "Sunny",
+            "humidity": 37,
+            "wind_speed": 17
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 87,
+            "condition": "Partly Cloudy",
+            "humidity": 86,
+            "wind_speed": 19
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 88,
+            "condition": "Cloudy",
+            "humidity": 86,
+            "wind_speed": 13
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 65,
+            "condition": "Partly Cloudy",
+            "humidity": 72,
+            "wind_speed": 21
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 64,
+            "condition": "Rainy",
+            "humidity": 47,
+            "wind_speed": 20
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 63,
+            "condition": "Stormy",
+            "humidity": 62,
+            "wind_speed": 25
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 86,
+            "condition": "Rainy",
+            "humidity": 66,
+            "wind_speed": 19
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 71,
+            "condition": "Partly Cloudy",
+            "humidity": 80,
+            "wind_speed": 18
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 51,
+            "condition": "Partly Cloudy",
+            "humidity": 64,
+            "wind_speed": 16
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 78,
+            "condition": "Rainy",
+            "humidity": 72,
+            "wind_speed": 17
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 89,
+            "condition": "Cloudy",
+            "humidity": 84,
+            "wind_speed": 7
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 53,
+            "condition": "Foggy",
+            "humidity": 61,
+            "wind_speed": 19
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 61,
+            "condition": "Cloudy",
+            "humidity": 67,
+            "wind_speed": 11
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 76,
+            "condition": "Stormy",
+            "humidity": 57,
+            "wind_speed": 18
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 83,
+            "condition": "Partly Cloudy",
+            "humidity": 65,
+            "wind_speed": 23
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 70,
+            "condition": "Rainy",
+            "humidity": 90,
+            "wind_speed": 17
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 89,
+            "condition": "Stormy",
+            "humidity": 52,
+            "wind_speed": 18
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 85,
+            "condition": "Cloudy",
+            "humidity": 66,
+            "wind_speed": 8
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "Chicago",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 59,
+            "condition": "Partly Cloudy",
+            "humidity": 55,
+            "wind_speed": 23
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 61,
+            "condition": "Foggy",
+            "humidity": 30,
+            "wind_speed": 16
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 59,
+            "condition": "Partly Cloudy",
+            "humidity": 52,
+            "wind_speed": 24
+          },
+          {
+            "city": "Chicago",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 89,
+            "condition": "Foggy",
+            "humidity": 41,
+            "wind_speed": 25
+          }
+        ]
+      }
+    ],
+    "Los Angeles": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 89,
+            "condition": "Sunny",
+            "humidity": 32,
+            "wind_speed": 15
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 89,
+            "condition": "Foggy",
+            "humidity": 41,
+            "wind_speed": 25
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 52,
+            "condition": "Partly Cloudy",
+            "humidity": 33,
+            "wind_speed": 24
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 60,
+            "condition": "Partly Cloudy",
+            "humidity": 81,
+            "wind_speed": 14
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 79,
+            "condition": "Sunny",
+            "humidity": 83,
+            "wind_speed": 19
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 94,
+            "condition": "Foggy",
+            "humidity": 50,
+            "wind_speed": 23
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 67,
+            "condition": "Stormy",
+            "humidity": 61,
+            "wind_speed": 22
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 92,
+            "condition": "Foggy",
+            "humidity": 60,
+            "wind_speed": 13
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 87,
+            "condition": "Cloudy",
+            "humidity": 33,
+            "wind_speed": 5
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 93,
+            "condition": "Stormy",
+            "humidity": 72,
+            "wind_speed": 11
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 52,
+            "condition": "Stormy",
+            "humidity": 47,
+            "wind_speed": 5
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 81,
+            "condition": "Rainy",
+            "humidity": 37,
+            "wind_speed": 8
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 64,
+            "condition": "Foggy",
+            "humidity": 77,
+            "wind_speed": 21
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 76,
+            "condition": "Sunny",
+            "humidity": 59,
+            "wind_speed": 23
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 76,
+            "condition": "Partly Cloudy",
+            "humidity": 76,
+            "wind_speed": 24
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 52,
+            "condition": "Partly Cloudy",
+            "humidity": 46,
+            "wind_speed": 24
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 56,
+            "condition": "Stormy",
+            "humidity": 57,
+            "wind_speed": 18
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 75,
+            "condition": "Foggy",
+            "humidity": 49,
+            "wind_speed": 13
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 76,
+            "condition": "Cloudy",
+            "humidity": 73,
+            "wind_speed": 12
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 61,
+            "condition": "Partly Cloudy",
+            "humidity": 67,
+            "wind_speed": 12
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 52,
+            "condition": "Rainy",
+            "humidity": 65,
+            "wind_speed": 17
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 81,
+            "condition": "Partly Cloudy",
+            "humidity": 57,
+            "wind_speed": 19
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 60,
+            "condition": "Sunny",
+            "humidity": 66,
+            "wind_speed": 21
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 82,
+            "condition": "Cloudy",
+            "humidity": 39,
+            "wind_speed": 16
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 87,
+            "condition": "Partly Cloudy",
+            "humidity": 43,
+            "wind_speed": 21
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 91,
+            "condition": "Cloudy",
+            "humidity": 48,
+            "wind_speed": 9
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 65,
+            "condition": "Stormy",
+            "humidity": 89,
+            "wind_speed": 17
+          },
+          {
+            "city": "Los Angeles",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 82,
+            "condition": "Cloudy",
+            "humidity": 65,
+            "wind_speed": 9
+          }
+        ]
+      }
+    ],
+    "Miami": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 66,
+            "condition": "Sunny",
+            "humidity": 66,
+            "wind_speed": 10
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 69,
+            "condition": "Cloudy",
+            "humidity": 72,
+            "wind_speed": 6
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 66,
+            "condition": "Stormy",
+            "humidity": 74,
+            "wind_speed": 23
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 85,
+            "condition": "Stormy",
+            "humidity": 48,
+            "wind_speed": 16
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 54,
+            "condition": "Partly Cloudy",
+            "humidity": 72,
+            "wind_speed": 6
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 77,
+            "condition": "Foggy",
+            "humidity": 36,
+            "wind_speed": 21
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 76,
+            "condition": "Sunny",
+            "humidity": 64,
+            "wind_speed": 13
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 88,
+            "condition": "Sunny",
+            "humidity": 42,
+            "wind_speed": 9
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 76,
+            "condition": "Partly Cloudy",
+            "humidity": 59,
+            "wind_speed": 5
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 79,
+            "condition": "Rainy",
+            "humidity": 70,
+            "wind_speed": 17
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 67,
+            "condition": "Stormy",
+            "humidity": 54,
+            "wind_speed": 18
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 63,
+            "condition": "Cloudy",
+            "humidity": 56,
+            "wind_speed": 18
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 77,
+            "condition": "Foggy",
+            "humidity": 55,
+            "wind_speed": 10
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 92,
+            "condition": "Cloudy",
+            "humidity": 88,
+            "wind_speed": 24
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 58,
+            "condition": "Cloudy",
+            "humidity": 78,
+            "wind_speed": 10
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 65,
+            "condition": "Stormy",
+            "humidity": 43,
+            "wind_speed": 12
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 85,
+            "condition": "Foggy",
+            "humidity": 76,
+            "wind_speed": 6
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 75,
+            "condition": "Rainy",
+            "humidity": 49,
+            "wind_speed": 23
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 94,
+            "condition": "Partly Cloudy",
+            "humidity": 61,
+            "wind_speed": 25
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 81,
+            "condition": "Stormy",
+            "humidity": 65,
+            "wind_speed": 19
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 94,
+            "condition": "Foggy",
+            "humidity": 56,
+            "wind_speed": 24
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 83,
+            "condition": "Stormy",
+            "humidity": 74,
+            "wind_speed": 14
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 66,
+            "condition": "Cloudy",
+            "humidity": 79,
+            "wind_speed": 20
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 62,
+            "condition": "Sunny",
+            "humidity": 58,
+            "wind_speed": 15
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "Miami",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 53,
+            "condition": "Stormy",
+            "humidity": 34,
+            "wind_speed": 15
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 61,
+            "condition": "Cloudy",
+            "humidity": 54,
+            "wind_speed": 6
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 65,
+            "condition": "Cloudy",
+            "humidity": 78,
+            "wind_speed": 6
+          },
+          {
+            "city": "Miami",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 73,
+            "condition": "Sunny",
+            "humidity": 42,
+            "wind_speed": 24
+          }
+        ]
+      }
+    ],
+    "New York": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 90,
+            "condition": "Foggy",
+            "humidity": 78,
+            "wind_speed": 13
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 81,
+            "condition": "Sunny",
+            "humidity": 50,
+            "wind_speed": 7
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 53,
+            "condition": "Rainy",
+            "humidity": 79,
+            "wind_speed": 13
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 87,
+            "condition": "Partly Cloudy",
+            "humidity": 55,
+            "wind_speed": 22
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 53,
+            "condition": "Rainy",
+            "humidity": 80,
+            "wind_speed": 21
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 83,
+            "condition": "Cloudy",
+            "humidity": 30,
+            "wind_speed": 15
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 66,
+            "condition": "Cloudy",
+            "humidity": 69,
+            "wind_speed": 9
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 94,
+            "condition": "Rainy",
+            "humidity": 54,
+            "wind_speed": 19
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 92,
+            "condition": "Cloudy",
+            "humidity": 38,
+            "wind_speed": 19
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 75,
+            "condition": "Rainy",
+            "humidity": 60,
+            "wind_speed": 11
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 83,
+            "condition": "Stormy",
+            "humidity": 41,
+            "wind_speed": 23
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 75,
+            "condition": "Partly Cloudy",
+            "humidity": 42,
+            "wind_speed": 24
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 80,
+            "condition": "Stormy",
+            "humidity": 73,
+            "wind_speed": 25
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 92,
+            "condition": "Sunny",
+            "humidity": 74,
+            "wind_speed": 20
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 79,
+            "condition": "Stormy",
+            "humidity": 81,
+            "wind_speed": 7
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 76,
+            "condition": "Stormy",
+            "humidity": 46,
+            "wind_speed": 12
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 89,
+            "condition": "Stormy",
+            "humidity": 65,
+            "wind_speed": 17
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 82,
+            "condition": "Rainy",
+            "humidity": 72,
+            "wind_speed": 21
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 64,
+            "condition": "Partly Cloudy",
+            "humidity": 30,
+            "wind_speed": 24
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 88,
+            "condition": "Stormy",
+            "humidity": 45,
+            "wind_speed": 20
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 73,
+            "condition": "Foggy",
+            "humidity": 83,
+            "wind_speed": 9
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 56,
+            "condition": "Partly Cloudy",
+            "humidity": 73,
+            "wind_speed": 16
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 77,
+            "condition": "Rainy",
+            "humidity": 90,
+            "wind_speed": 16
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 74,
+            "condition": "Rainy",
+            "humidity": 49,
+            "wind_speed": 9
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "New York",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 54,
+            "condition": "Foggy",
+            "humidity": 57,
+            "wind_speed": 18
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 66,
+            "condition": "Sunny",
+            "humidity": 83,
+            "wind_speed": 6
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 93,
+            "condition": "Partly Cloudy",
+            "humidity": 78,
+            "wind_speed": 17
+          },
+          {
+            "city": "New York",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 57,
+            "condition": "Stormy",
+            "humidity": 43,
+            "wind_speed": 21
+          }
+        ]
+      }
+    ],
+    "San Francisco": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 77,
+            "condition": "Partly Cloudy",
+            "humidity": 47,
+            "wind_speed": 11
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 69,
+            "condition": "Cloudy",
+            "humidity": 70,
+            "wind_speed": 6
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 84,
+            "condition": "Rainy",
+            "humidity": 82,
+            "wind_speed": 7
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 64,
+            "condition": "Cloudy",
+            "humidity": 31,
+            "wind_speed": 22
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 70,
+            "condition": "Rainy",
+            "humidity": 87,
+            "wind_speed": 12
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 65,
+            "condition": "Rainy",
+            "humidity": 37,
+            "wind_speed": 9
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 53,
+            "condition": "Sunny",
+            "humidity": 76,
+            "wind_speed": 11
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 72,
+            "condition": "Partly Cloudy",
+            "humidity": 72,
+            "wind_speed": 17
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 56,
+            "condition": "Partly Cloudy",
+            "humidity": 49,
+            "wind_speed": 6
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 50,
+            "condition": "Stormy",
+            "humidity": 82,
+            "wind_speed": 10
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 91,
+            "condition": "Stormy",
+            "humidity": 47,
+            "wind_speed": 24
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 50,
+            "condition": "Rainy",
+            "humidity": 69,
+            "wind_speed": 16
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 75,
+            "condition": "Rainy",
+            "humidity": 37,
+            "wind_speed": 13
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 88,
+            "condition": "Cloudy",
+            "humidity": 64,
+            "wind_speed": 12
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 71,
+            "condition": "Stormy",
+            "humidity": 62,
+            "wind_speed": 12
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 57,
+            "condition": "Cloudy",
+            "humidity": 81,
+            "wind_speed": 5
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 57,
+            "condition": "Partly Cloudy",
+            "humidity": 81,
+            "wind_speed": 19
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 54,
+            "condition": "Stormy",
+            "humidity": 63,
+            "wind_speed": 7
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 68,
+            "condition": "Sunny",
+            "humidity": 74,
+            "wind_speed": 25
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 79,
+            "condition": "Stormy",
+            "humidity": 33,
+            "wind_speed": 14
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 75,
+            "condition": "Cloudy",
+            "humidity": 50,
+            "wind_speed": 17
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 67,
+            "condition": "Partly Cloudy",
+            "humidity": 71,
+            "wind_speed": 25
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 60,
+            "condition": "Stormy",
+            "humidity": 60,
+            "wind_speed": 10
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 58,
+            "condition": "Rainy",
+            "humidity": 83,
+            "wind_speed": 17
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "San Francisco",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 55,
+            "condition": "Sunny",
+            "humidity": 62,
+            "wind_speed": 24
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 68,
+            "condition": "Stormy",
+            "humidity": 34,
+            "wind_speed": 22
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 87,
+            "condition": "Sunny",
+            "humidity": 48,
+            "wind_speed": 17
+          },
+          {
+            "city": "San Francisco",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 62,
+            "condition": "Foggy",
+            "humidity": 35,
+            "wind_speed": 8
+          }
+        ]
+      }
+    ],
+    "Seattle": [
+      {
+        "date": "2026-02-10",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-10",
+            "time_slot": "Morning",
+            "temperature": 67,
+            "condition": "Cloudy",
+            "humidity": 80,
+            "wind_speed": 24
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-10",
+            "time_slot": "Afternoon",
+            "temperature": 53,
+            "condition": "Cloudy",
+            "humidity": 45,
+            "wind_speed": 18
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-10",
+            "time_slot": "Evening",
+            "temperature": 63,
+            "condition": "Rainy",
+            "humidity": 82,
+            "wind_speed": 20
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-10",
+            "time_slot": "Night",
+            "temperature": 65,
+            "condition": "Partly Cloudy",
+            "humidity": 56,
+            "wind_speed": 16
+          }
+        ]
+      },
+      {
+        "date": "2026-02-11",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-11",
+            "time_slot": "Morning",
+            "temperature": 51,
+            "condition": "Partly Cloudy",
+            "humidity": 63,
+            "wind_speed": 8
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-11",
+            "time_slot": "Afternoon",
+            "temperature": 88,
+            "condition": "Sunny",
+            "humidity": 53,
+            "wind_speed": 13
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-11",
+            "time_slot": "Evening",
+            "temperature": 81,
+            "condition": "Cloudy",
+            "humidity": 65,
+            "wind_speed": 14
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-11",
+            "time_slot": "Night",
+            "temperature": 85,
+            "condition": "Sunny",
+            "humidity": 40,
+            "wind_speed": 23
+          }
+        ]
+      },
+      {
+        "date": "2026-02-12",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-12",
+            "time_slot": "Morning",
+            "temperature": 51,
+            "condition": "Foggy",
+            "humidity": 85,
+            "wind_speed": 13
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-12",
+            "time_slot": "Afternoon",
+            "temperature": 75,
+            "condition": "Stormy",
+            "humidity": 66,
+            "wind_speed": 16
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-12",
+            "time_slot": "Evening",
+            "temperature": 77,
+            "condition": "Sunny",
+            "humidity": 49,
+            "wind_speed": 23
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-12",
+            "time_slot": "Night",
+            "temperature": 82,
+            "condition": "Partly Cloudy",
+            "humidity": 70,
+            "wind_speed": 10
+          }
+        ]
+      },
+      {
+        "date": "2026-02-13",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-13",
+            "time_slot": "Morning",
+            "temperature": 70,
+            "condition": "Cloudy",
+            "humidity": 58,
+            "wind_speed": 25
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-13",
+            "time_slot": "Afternoon",
+            "temperature": 65,
+            "condition": "Cloudy",
+            "humidity": 52,
+            "wind_speed": 16
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-13",
+            "time_slot": "Evening",
+            "temperature": 79,
+            "condition": "Rainy",
+            "humidity": 70,
+            "wind_speed": 17
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-13",
+            "time_slot": "Night",
+            "temperature": 59,
+            "condition": "Partly Cloudy",
+            "humidity": 53,
+            "wind_speed": 18
+          }
+        ]
+      },
+      {
+        "date": "2026-02-14",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-14",
+            "time_slot": "Morning",
+            "temperature": 81,
+            "condition": "Foggy",
+            "humidity": 90,
+            "wind_speed": 22
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-14",
+            "time_slot": "Afternoon",
+            "temperature": 65,
+            "condition": "Partly Cloudy",
+            "humidity": 57,
+            "wind_speed": 18
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-14",
+            "time_slot": "Evening",
+            "temperature": 75,
+            "condition": "Foggy",
+            "humidity": 60,
+            "wind_speed": 19
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-14",
+            "time_slot": "Night",
+            "temperature": 89,
+            "condition": "Stormy",
+            "humidity": 33,
+            "wind_speed": 15
+          }
+        ]
+      },
+      {
+        "date": "2026-02-15",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-15",
+            "time_slot": "Morning",
+            "temperature": 86,
+            "condition": "Foggy",
+            "humidity": 88,
+            "wind_speed": 18
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-15",
+            "time_slot": "Afternoon",
+            "temperature": 95,
+            "condition": "Sunny",
+            "humidity": 76,
+            "wind_speed": 13
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-15",
+            "time_slot": "Evening",
+            "temperature": 56,
+            "condition": "Stormy",
+            "humidity": 50,
+            "wind_speed": 21
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-15",
+            "time_slot": "Night",
+            "temperature": 55,
+            "condition": "Sunny",
+            "humidity": 69,
+            "wind_speed": 8
+          }
+        ]
+      },
+      {
+        "date": "2026-02-16",
+        "slots": [
+          {
+            "city": "Seattle",
+            "date": "2026-02-16",
+            "time_slot": "Morning",
+            "temperature": 61,
+            "condition": "Foggy",
+            "humidity": 61,
+            "wind_speed": 9
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-16",
+            "time_slot": "Afternoon",
+            "temperature": 80,
+            "condition": "Stormy",
+            "humidity": 72,
+            "wind_speed": 5
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-16",
+            "time_slot": "Evening",
+            "temperature": 62,
+            "condition": "Foggy",
+            "humidity": 43,
+            "wind_speed": 12
+          },
+          {
+            "city": "Seattle",
+            "date": "2026-02-16",
+            "time_slot": "Night",
+            "temperature": 61,
+            "condition": "Sunny",
+            "humidity": 43,
+            "wind_speed": 12
+          }
+        ]
+      }
+    ]
+  }
+}

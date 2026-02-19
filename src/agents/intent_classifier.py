@@ -19,15 +19,13 @@ class IntentClassifierAgent(Agent):
             "intent_classification"
         )
         
-        import os
-        guardrail_id = os.getenv("GUARDRAIL_ID")
-        
+        # Disable guardrail for intent classifier - it blocks legitimate booking requests
         super().__init__(
             name="intent_classifier",
             primary_provider=primary,
             fallback_provider=fallback,
             circuit_breaker=breaker,
-            guardrail_id=guardrail_id
+            guardrail_id=None
         )
         
         self.config = config

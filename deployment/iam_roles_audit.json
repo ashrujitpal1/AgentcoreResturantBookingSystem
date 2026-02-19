@@ -1,0 +1,237 @@
+{
+  "runtime_role": {
+    "role": {
+      "Path": "/",
+      "RoleName": "agentcore-restaurant_booking-runtime-role",
+      "RoleId": "AROA2EEJFFBYHL2Q6MQ3S",
+      "Arn": "arn:aws:iam::696072349808:role/agentcore-restaurant_booking-runtime-role",
+      "CreateDate": "2026-02-06 08:41:59+00:00",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "AssumeRolePolicyAgentCore",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "bedrock-agentcore.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+              "StringEquals": {
+                "aws:SourceAccount": "696072349808"
+              },
+              "ArnLike": {
+                "aws:SourceArn": "arn:aws:bedrock-agentcore:us-east-1:696072349808:*"
+              }
+            }
+          }
+        ]
+      },
+      "MaxSessionDuration": 3600,
+      "RoleLastUsed": {
+        "LastUsedDate": "2026-02-08 16:33:02+00:00",
+        "Region": "us-east-1"
+      }
+    },
+    "inline_policies": {
+      "AgentCoreRuntimePolicy": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "BedrockPermissions",
+            "Effect": "Allow",
+            "Action": [
+              "bedrock:InvokeModel",
+              "bedrock:InvokeModelWithResponseStream",
+              "bedrock:Retrieve"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Sid": "ECRImageAccess",
+            "Effect": "Allow",
+            "Action": [
+              "ecr:BatchGetImage",
+              "ecr:GetDownloadUrlForLayer",
+              "ecr:GetAuthorizationToken"
+            ],
+            "Resource": [
+              "arn:aws:ecr:us-east-1:696072349808:repository/*"
+            ]
+          },
+          {
+            "Sid": "ECRTokenAccess",
+            "Effect": "Allow",
+            "Action": [
+              "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "logs:DescribeLogStreams",
+              "logs:CreateLogGroup"
+            ],
+            "Resource": [
+              "arn:aws:logs:us-east-1:696072349808:log-group:/aws/bedrock-agentcore/runtimes/*"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "logs:DescribeLogGroups"
+            ],
+            "Resource": [
+              "arn:aws:logs:us-east-1:696072349808:log-group:*"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"
+            ],
+            "Resource": [
+              "arn:aws:logs:us-east-1:696072349808:log-group:/aws/bedrock-agentcore/runtimes/*:log-stream:*"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "xray:PutTraceSegments",
+              "xray:PutTelemetryRecords",
+              "xray:GetSamplingRules",
+              "xray:GetSamplingTargets"
+            ],
+            "Resource": [
+              "*"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Resource": "*",
+            "Action": "cloudwatch:PutMetricData",
+            "Condition": {
+              "StringEquals": {
+                "cloudwatch:namespace": "bedrock-agentcore"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "bedrock-agentcore:ListMemories",
+              "bedrock-agentcore:ListMemoryRecords",
+              "bedrock-agentcore:RetrieveMemoryRecords",
+              "bedrock-agentcore:GetMemory",
+              "bedrock-agentcore:GetMemoryRecord",
+              "bedrock-agentcore:CreateEvent",
+              "bedrock-agentcore:GetEvent",
+              "bedrock-agentcore:ListEvents"
+            ],
+            "Resource": [
+              "arn:aws:bedrock-agentcore:us-east-1:696072349808:memory/*"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "bedrock-agentcore:GetWorkloadAccessToken",
+              "bedrock-agentcore:GetWorkloadAccessTokenForJWT",
+              "bedrock-agentcore:GetWorkloadAccessTokenForUserId"
+            ],
+            "Resource": [
+              "arn:aws:bedrock-agentcore:us-east-1:696072349808:workload-identity-directory/default",
+              "arn:aws:bedrock-agentcore:us-east-1:696072349808:workload-identity-directory/default/workload-identity/restaurant_booking-*"
+            ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:GetParameter"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:696072349808:parameter/restaurant-booking/*"
+            ]
+          },
+          {
+            "Sid": "LambdaInvoke",
+            "Effect": "Allow",
+            "Action": [
+              "lambda:InvokeFunction",
+              "lambda:InvokeAsync"
+            ],
+            "Resource": "arn:aws:lambda:us-east-1:696072349808:function:*"
+          },
+          {
+            "Sid": "S3PromptAccess",
+            "Effect": "Allow",
+            "Action": [
+              "s3:GetObject",
+              "s3:ListBucket"
+            ],
+            "Resource": [
+              "arn:aws:s3:::restaurant-booking-prompts-696072349808",
+              "arn:aws:s3:::restaurant-booking-prompts-696072349808/*"
+            ]
+          }
+        ]
+      }
+    },
+    "attached_policies": []
+  },
+  "gateway_role": {
+    "role": {
+      "Path": "/",
+      "RoleName": "agentcore-restaurant_booking-gateway-role",
+      "RoleId": "AROA2EEJFFBYOCLC5FJQ6",
+      "Arn": "arn:aws:iam::696072349808:role/agentcore-restaurant_booking-gateway-role",
+      "CreateDate": "2026-02-06 09:07:53+00:00",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "AssumeRolePolicy",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "bedrock-agentcore.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole",
+            "Condition": {
+              "StringEquals": {
+                "aws:SourceAccount": "696072349808"
+              },
+              "ArnLike": {
+                "aws:SourceArn": "arn:aws:bedrock-agentcore:us-east-1:696072349808:*"
+              }
+            }
+          }
+        ]
+      },
+      "MaxSessionDuration": 3600,
+      "RoleLastUsed": {}
+    },
+    "inline_policies": {
+      "AgentCoreGatewayPolicy": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "GatewayPermissions",
+            "Effect": "Allow",
+            "Action": [
+              "bedrock-agentcore:*",
+              "bedrock:*",
+              "agent-credential-provider:*",
+              "iam:PassRole",
+              "secretsmanager:GetSecretValue",
+              "lambda:InvokeFunction"
+            ],
+            "Resource": "*"
+          }
+        ]
+      }
+    },
+    "attached_policies": []
+  }
+}

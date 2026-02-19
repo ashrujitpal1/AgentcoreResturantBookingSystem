@@ -8,7 +8,7 @@ agents:
     deployment_type: container
     runtime_type: null
     platform: linux/arm64
-    container_runtime: docker
+    container_runtime: none
     source_path: null
     aws:
       execution_role: arn:aws:iam::696072349808:role/agentcore-restaurant_booking-runtime-role

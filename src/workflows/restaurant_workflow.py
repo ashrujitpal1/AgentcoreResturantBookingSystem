@@ -12,6 +12,7 @@ import boto3
 
 from .state import RestaurantBookingState
 from src.agents import IntentClassifierAgent, RestaurantFinderAgent, BookingAgent
+from src.agents.greeting_agent import GreetingAgent
 
 
 class RestaurantBookingWorkflow:
@@ -24,6 +25,7 @@ class RestaurantBookingWorkflow:
         self.mcp_tools = mcp_tools
         
         # Initialize agents
+        self.greeting_agent = GreetingAgent()
         self.intent_classifier = IntentClassifierAgent()
         self.restaurant_finder = RestaurantFinderAgent(mcp_tools)
         self.booking_agent = BookingAgent(mcp_tools)
@@ -157,7 +159,16 @@ class RestaurantBookingWorkflow:
     
     def _booking_agent_node(self, state: RestaurantBookingState) -> Dict[str, Any]:
         """Execute booking with SAGA pattern using BookingAgent"""
-        user_message = state["messages"][-1].content
+        # Get last HUMAN message, not AI message
+        user_message = None
+        for msg in reversed(state["messages"]):
+            if isinstance(msg, HumanMessage):
+                user_message = msg.content
+                break
+        
+        if not user_message:
+            user_message = state["messages"][-1].content
+        
         correlation_id = state["correlation_id"]
         context = state.get("context", {})
         
@@ -335,7 +346,7 @@ Please try again or contact support."""
     
     # ========== PUBLIC API ==========
     
-    def invoke(self, user_message: str, user_id: str, session_id: str, restaurants: list = None, selected_restaurant: dict = None) -> Dict[str, Any]:
+    def invoke(self, user_message: str, user_id: str, session_id: str, restaurants: list = None, selected_restaurant: dict = None, phone: str = None, is_first_message: bool = False) -> Dict[str, Any]:
         """
         Invoke workflow with user message.
         Retrieves conversation history from AgentCore Memory.
@@ -346,10 +357,17 @@ Please try again or contact support."""
             session_id: Session identifier (used as correlation_id for tracing)
             restaurants: Restaurant list from previous search (from Streamlit session)
             selected_restaurant: Selected restaurant (from Streamlit session)
+            phone: User phone number
+            is_first_message: Whether this is the first message (trigger greeting)
         
         Returns:
             Final state with response
         """
+        # Show personalized greeting on first message
+        if is_first_message:
+            greeting = self.greeting_agent.greet(user_id, phone or "")
+            return {"final_response": greeting, "is_greeting": True}
+        
         # Retrieve booking state AND conversation history from AgentCore Memory
         memory_data = self._retrieve_memory(user_id, session_id)
         memory_params = memory_data.get('booking_params', {})

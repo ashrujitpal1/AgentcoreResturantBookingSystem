@@ -6,14 +6,15 @@ echo "RESTAURANT BOOKING SYSTEM - COMPLETE DEPLOYMENT"
 echo "================================================================================"
 echo ""
 
-# Check if .env file exists
-if [ ! -f .env ]; then
-    echo "❌ .env file not found. Please create it from .env.example"
+# Load environment variables from parent directory
+if [ -f ../.env ]; then
+    export $(cat ../.env | grep -v '^#' | xargs)
+elif [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+else
+    echo "❌ .env file not found"
     exit 1
 fi
-
-# Load environment variables
-export $(cat .env | grep -v '^#' | xargs)
 
 echo "📋 Deployment Configuration:"
 echo "   AWS Region: ${AWS_REGION:-us-east-1}"
@@ -43,9 +44,23 @@ python3 deploy_cognito_user_pool.py
 echo "✅ Cognito User Pool deployed"
 echo ""
 
-# Step 4: Deploy AgentCore Gateway
+# Step 4: Configure Cognito for Weather API
 echo "================================================================================"
-echo "STEP 4: Deploying AgentCore Gateway"
+echo "STEP 4: Configuring Cognito for Weather API (RBAC)"
+echo "================================================================================"
+# Read USER_POOL_ID from .env (updated in Step 3)
+if [ -f ../.env ]; then
+    export $(cat ../.env | grep '^USER_POOL_ID=' | xargs)
+elif [ -f .env ]; then
+    export $(cat .env | grep '^USER_POOL_ID=' | xargs)
+fi
+python3 update_cognito_for_weather.py "${USER_POOL_ID}" "${AWS_REGION}"
+echo "✅ Weather API Cognito configured"
+echo ""
+
+# Step 5: Deploy AgentCore Gateway
+echo "================================================================================"
+echo "STEP 5: Deploying AgentCore Gateway"
 echo "================================================================================"
 python3 deploy_agentcore_gateway.py
 echo "✅ AgentCore Gateway deployed"
@@ -53,7 +68,7 @@ echo ""
 
 # Step 5: Deploy Bedrock Guardrails
 echo "================================================================================"
-echo "STEP 5: Deploying Bedrock Guardrails"
+echo "STEP 6: Deploying Bedrock Guardrails"
 echo "================================================================================"
 python3 deploy_bedrock_guardrails.py
 echo "✅ Bedrock Guardrails deployed"
@@ -61,7 +76,7 @@ echo ""
 
 # Step 6: Upload Prompts to S3
 echo "================================================================================"
-echo "STEP 6: Uploading Versioned Prompts to S3"
+echo "STEP 7: Uploading Versioned Prompts to S3"
 echo "================================================================================"
 python3 deploy_prompts_to_s3.py
 echo "✅ Prompts uploaded to S3"
@@ -69,7 +84,7 @@ echo ""
 
 # Step 7: Deploy AgentCore Runtime (Strands + LangGraph)
 echo "================================================================================"
-echo "STEP 7: Deploying AgentCore Runtime (Strands + LangGraph)"
+echo "STEP 8: Deploying AgentCore Runtime (Strands + LangGraph)"
 echo "================================================================================"
 python3 deploy_agentcore_runtime.py
 echo "✅ AgentCore Runtime deployed"
@@ -83,6 +98,7 @@ echo "📋 Deployment Summary:"
 echo "   ✅ Lambda Functions (MCP Tools)"
 echo "   ✅ AgentCore Memory"
 echo "   ✅ Cognito User Pool"
+echo "   ✅ Weather API Cognito (RBAC)"
 echo "   ✅ AgentCore Gateway"
 echo "   ✅ Bedrock Guardrails"
 echo "   ✅ Versioned Prompts (S3)"

@@ -128,7 +128,28 @@ class RestaurantFinderAgent(Agent):
     ) -> str:
         """Generate conversational response with restaurant recommendations"""
         if not restaurants:
-            return "I couldn't find any restaurants matching your criteria. Please try a different location or cuisine type."
+            # Use LLM to generate contextual no-results response
+            prompt = f"""The user searched for restaurants but no results were found.
+
+User request: {user_message}
+
+Generate a helpful response that:
+1. Acknowledges no restaurants were found
+2. Suggests specific alternatives based on their search (try different city OR different cuisine)
+3. Asks them to clarify their preference
+
+Be conversational and helpful."""
+            
+            messages = [{"role": "user", "content": [{"text": prompt}]}]
+            
+            response = self.invoke_llm(
+                messages=messages,
+                system_prompt=system_prompt,
+                temperature=0.3,
+                max_tokens=150
+            )
+            
+            return response["content"]
         
         # Format restaurants for LLM with actual data - validate all fields
         restaurants_text = "\n\n".join([

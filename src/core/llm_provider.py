@@ -5,6 +5,7 @@ Enables seamless switching between Bedrock models with circuit breaker support.
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
 import boto3
+import os
 from datetime import datetime
 
 
@@ -67,7 +68,7 @@ class AmazonNovaProvider(LLMProvider):
         if guardrail_id:
             request["guardrailConfig"] = {
                 "guardrailIdentifier": guardrail_id,
-                "guardrailVersion": "3"
+                "guardrailVersion": os.getenv("GUARDRAIL_VERSION", guardrail_version)
             }
         
         response = self.bedrock.converse(
@@ -118,7 +119,7 @@ class AnthropicProvider(LLMProvider):
         if guardrail_id:
             request["guardrailConfig"] = {
                 "guardrailIdentifier": guardrail_id,
-                "guardrailVersion": "3"
+                "guardrailVersion": os.getenv("GUARDRAIL_VERSION", guardrail_version)
             }
         
         response = self.bedrock.converse(

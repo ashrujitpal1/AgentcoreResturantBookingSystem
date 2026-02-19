@@ -6,8 +6,8 @@ Follows agentcore-for-education pattern with proper IAM role creation.
 import sys
 import os
 
-# Add project root to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add parent directory to path for utils import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from bedrock_agentcore_starter_toolkit import Runtime
 from boto3.session import Session

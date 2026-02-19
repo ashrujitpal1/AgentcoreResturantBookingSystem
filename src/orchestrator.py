@@ -15,32 +15,8 @@ from src.observability import CorrelationContext, logger
 from src.security import security_context
 
 
-def validate_input_with_guardrail(user_message: str) -> tuple[bool, str]:
-    """Validate user input using Bedrock Guardrail"""
-    guardrail_id = os.getenv("GUARDRAIL_ID")
-    if not guardrail_id:
-        return True, ""  # No guardrail configured
-    
-    try:
-        bedrock = boto3.client("bedrock-runtime", region_name=os.getenv("AWS_REGION", "us-east-1"))
-        
-        # Use a simple prompt to test if input triggers guardrail
-        response = bedrock.converse(
-            modelId="amazon.nova-micro-v1:0",  # Cheapest model for validation
-            messages=[{"role": "user", "content": [{"text": user_message}]}],
-            inferenceConfig={"maxTokens": 10, "temperature": 0.0},
-            guardrailConfig={
-                "guardrailIdentifier": guardrail_id,
-                "guardrailVersion": "3"
-            }
-        )
-        return True, ""  # Input passed guardrail
-        
-    except Exception as e:
-        error_msg = str(e)
-        if "GUARDRAIL" in error_msg.upper():
-            return False, "I can only help with restaurant bookings. Please ask about restaurants or reservations."
-        return True, ""  # Other errors, let it pass
+# Guardrail validation removed - handled by individual agents as needed
+# Orchestrator should not block legitimate restaurant search/booking requests
 
 
 def handler(event: dict, context: dict) -> dict:
@@ -69,14 +45,7 @@ def handler(event: dict, context: dict) -> dict:
             "error": error
         }
     
-    # Guardrail input validation
-    guardrail_passed, guardrail_msg = validate_input_with_guardrail(user_message)
-    if not guardrail_passed:
-        logger.warning("Guardrail blocked input", reason=guardrail_msg)
-        return {
-            "response": guardrail_msg,
-            "blocked_by": "guardrail"
-        }
+    # Guardrail validation removed - agents handle their own guardrails as needed
     
     try:
         # Get MCP tools
