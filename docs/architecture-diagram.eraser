@@ -1,0 +1,120 @@
+// Restaurant Booking System - LangGraph + Strands Hybrid Architecture
+// AWS Bedrock AgentCore with Cost-Optimized Model Selection
+
+title Restaurant Booking System Architecture
+
+// User Layer
+User [icon: user]
+
+// Frontend with User Tier (Gray - Infrastructure)
+User > Streamlit Frontend [icon: server, color: cyan]
+Streamlit Frontend > User Login [icon: user, color: orange]
+User Login > Cognito User Pool [icon: aws-cognito, color: orange]
+Cognito User Pool > User Tier [icon: tag, color: yellow]
+
+// API Gateway (Security Layer - Red)
+Streamlit Frontend > API Gateway [icon: aws-api-gateway, color: red]
+API Gateway > WAF [icon: shield, color: red]
+API Gateway > Cognito Authorizer [icon: aws-cognito, color: orange]
+Cognito Authorizer > User Group Validator [icon: check, color: yellow]
+
+// AWS Bedrock AgentCore Platform (Purple - Core)
+API Gateway > AgentCore Runtime [icon: aws-bedrock, color: purple]
+
+// AgentCore Runtime hosts Orchestrator (Purple - Core)
+AgentCore Runtime > Orchestrator Lambda [icon: aws-lambda, color: orange]
+
+// AgentCore Security (Red - Security)
+Orchestrator Lambda > AgentCore Security [icon: shield, color: red]
+AgentCore Security > Input Validator [icon: check, color: red]
+AgentCore Security > Guardrails [icon: shield, color: red]
+
+// AgentCore Gateway (Pink - Tool Invocation)
+Orchestrator Lambda > AgentCore Gateway [icon: aws-lambda, color: pink]
+
+// Workflow Execution (Blue - Orchestration)
+Input Validator > LangGraph Workflow [icon: workflow, color: blue]
+
+// LangGraph State Management (Blue - Orchestration)
+LangGraph Workflow > RestaurantBookingState [icon: database, color: brown]
+
+// LangGraph Nodes (Blue - Orchestration)
+LangGraph Workflow > Entry Router Node [icon: route, color: blue]
+Entry Router Node > Restaurant Finder Node [icon: search, color: green]
+Entry Router Node > Booking Agent Node [icon: calendar, color: orange]
+Restaurant Finder Node > Weather Agent Node [icon: cloud, color: cyan]
+Weather Agent Node > Booking Agent Node
+Restaurant Finder Node > Booking Agent Node
+
+// Strands Agents (Business Logic - Matching Node Colors)
+Entry Router Node > IntentClassifierAgent [icon: brain, color: blue]
+Restaurant Finder Node > RestaurantFinderAgent [icon: search, color: green]
+Weather Agent Node > WeatherAgent [icon: cloud, color: cyan]
+Booking Agent Node > BookingAgent [icon: calendar, color: orange]
+
+// Cost-Optimized LLM Selection (Purple - LLM Calls)
+IntentClassifierAgent > Nova Micro [icon: aws, color: lightblue]
+RestaurantFinderAgent > Nova Lite [icon: aws, color: blue]
+WeatherAgent > Nova Lite [icon: aws, color: blue]
+BookingAgent > Claude Sonnet [icon: anthropic, color: purple]
+
+// Circuit Breaker Fallback (Yellow - Fallback)
+Claude Sonnet > Nova Lite [icon: refresh, color: yellow, label: fallback]
+
+// Bedrock Converse API (Purple - LLM Calls)
+Nova Micro > Bedrock Converse [icon: aws-bedrock, color: indigo]
+Nova Lite > Bedrock Converse
+Claude Sonnet > Bedrock Converse
+
+// AgentCore Gateway invokes MCP Tools (Pink - Tool Invocation)
+RestaurantFinderAgent > AgentCore Gateway
+WeatherAgent > AgentCore Gateway
+BookingAgent > AgentCore Gateway
+
+// MCP Tool Functions (Pink - Tool Invocation)
+AgentCore Gateway > fetchRestaurantDetails [icon: server]
+AgentCore Gateway > searchUserDetails [icon: server]
+AgentCore Gateway > registerUser [icon: server]
+AgentCore Gateway > bookATable [icon: server]
+AgentCore Gateway > paymentAPI [icon: server]
+AgentCore Gateway > getCurrentDateTime [icon: server]
+AgentCore Gateway > weatherAPI [icon: server]
+AgentCore Gateway > forecastAPI [icon: server]
+
+// Weather Intelligence (Cyan - Weather Flow)
+WeatherAgent > Weather Analysis [icon: brain, color: cyan]
+Weather Analysis > Bad Weather Detection [icon: alert, color: red]
+Bad Weather Detection > Forecast Range Calculator [icon: calendar, color: yellow]
+
+// SAGA Pattern (Orange - Booking Flow)
+BookingAgent > SAGA Workflow [icon: workflow, color: orange]
+SAGA Workflow > Compensation Stack [icon: undo, color: red]
+SAGA Workflow > DynamoDB Bookings [icon: aws-dynamodb, color: blue]
+
+// AgentCore Memory (Brown - Data Persistence)
+LangGraph Workflow > AgentCore Memory [icon: aws-bedrock, color: purple]
+AgentCore Memory > Conversation History [icon: database]
+AgentCore Memory > Booking State [icon: database]
+
+// Caching Layer (Brown - Data Persistence)
+RestaurantFinderAgent > ElastiCache [icon: aws-elasticache, color: red]
+ElastiCache > Restaurant Cache [icon: database]
+
+// Prompt Management (Brown - Data Persistence)
+IntentClassifierAgent > S3 Prompts [icon: aws-s3, color: green]
+RestaurantFinderAgent > S3 Prompts
+WeatherAgent > S3 Prompts
+BookingAgent > S3 Prompts
+
+// Observability (Gray - Monitoring)
+AgentCore Runtime > X-Ray Tracing [icon: aws-xray, color: gray]
+AgentCore Runtime > CloudWatch Logs [icon: aws-cloudwatch, color: gray]
+AgentCore Runtime > Cost Tracker [icon: aws-cost-explorer, color: gray]
+DynamoDB Bookings > CloudWatch Metrics [icon: aws-cloudwatch, color: gray]
+
+// Response Flow (Blue - Orchestration)
+Booking Agent Node > Final Response [icon: message]
+Restaurant Finder Node > Final Response
+Weather Agent Node > Final Response
+Final Response > AgentCore Runtime
+AgentCore Runtime > Streamlit Frontend

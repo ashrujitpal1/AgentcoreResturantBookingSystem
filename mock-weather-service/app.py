@@ -7,6 +7,7 @@ app = Flask(__name__)
 CITIES = ["Austin", "Boston", "Chicago", "Los Angeles", "Miami", "New York", "San Francisco", "Seattle"]
 CONDITIONS = ["Sunny", "Cloudy", "Rainy", "Partly Cloudy", "Stormy", "Foggy"]
 TIME_SLOTS = ["Morning", "Afternoon", "Evening", "Night"]
+
 CURRENT_DATE = datetime(2026, 2, 10, 6, 0, 0)
 
 def generate_weather(city, date, time_slot):

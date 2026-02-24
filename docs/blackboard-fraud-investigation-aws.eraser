@@ -1,0 +1,63 @@
+direction right
+textSize medium
+title Blackboard/Shared Knowledge Pattern - Financial Fraud Investigation (AWS)
+
+Fraud_Analyst [icon: user]
+API_Gateway [icon: aws-api-gateway, label: "API Gateway"]
+Controller [icon: aws-step-functions, label: "Controller (Step Functions)"]
+Blackboard [icon: aws-dynamodb, label: "Blackboard (DynamoDB)"]
+
+Data_Agent [icon: aws-lambda, label: "Data Agent"]
+Pattern_Agent [icon: aws-lambda, label: "Pattern Agent"]
+Rule_Agent [icon: aws-lambda, label: "Rule Agent"]
+Synthesis_Agent [icon: aws-lambda, label: "Synthesis Agent"]
+
+Claude [icon: aws-bedrock, label: "Bedrock Claude 3"]
+S3_Data [icon: aws-s3, label: "S3 Storage"]
+Knowledge_Base [icon: aws-bedrock, label: "Knowledge Base"]
+
+Fraud_Analyst > API_Gateway: 1. Investigate: Account 12345 suspicious activity [color: green]
+API_Gateway > Controller: 2. Initialize investigation [color: green]
+
+Controller > Blackboard: 3. Write problem statement [color: blue]
+Controller > Blackboard: 4. Evaluate: raw_data=empty [color: "#00bbff"]
+Controller > Data_Agent: 5. SELECT Data Agent [color: purple]
+
+Data_Agent > Blackboard: 6. READ problem [color: orange]
+Data_Agent > S3_Data: 7. Fetch transaction logs [color: orange]
+Data_Agent > Claude: 8. Extract patterns [color: orange]
+Data_Agent > Blackboard: 9. WRITE raw_data [color: orange]
+
+Controller > Blackboard: 10. Evaluate: raw_data exists [color: "#00bbff"]
+Controller > Pattern_Agent: 11. SELECT Pattern Agent [color: purple]
+
+Pattern_Agent > Blackboard: 12. READ raw_data [color: orange]
+Pattern_Agent > Claude: 13. Analyze: structuring + velocity anomaly [color: orange]
+Pattern_Agent > Blackboard: 14. WRITE analysis [color: orange]
+
+Controller > Blackboard: 15. Evaluate: analysis exists [color: "#00bbff"]
+Controller > Rule_Agent: 16. SELECT Rule Agent [color: purple]
+
+Rule_Agent > Blackboard: 17. READ raw_data + analysis [color: orange]
+Rule_Agent > Knowledge_Base: 18. Query AML rules [color: orange]
+Rule_Agent > Claude: 19. Validate: 2 violations + conflict [color: orange]
+Rule_Agent > Blackboard: 20. WRITE validations + conflicts [color: orange]
+
+Controller > Blackboard: 21. Evaluate: conflict exists [color: "#00bbff"]
+Controller > Data_Agent: 22. SELECT Data Agent AGAIN [color: purple]
+
+Data_Agent > Blackboard: 23. READ conflict [color: orange]
+Data_Agent > S3_Data: 24. Fetch additional context [color: orange]
+Data_Agent > Claude: 25. Resolve conflict [color: orange]
+Data_Agent > Blackboard: 26. WRITE resolution [color: orange]
+
+Controller > Blackboard: 27. Evaluate: conflict resolved [color: "#00bbff"]
+Controller > Synthesis_Agent: 28. SELECT Synthesis Agent [color: purple]
+
+Synthesis_Agent > Blackboard: 29. READ all sections [color: orange]
+Synthesis_Agent > Claude: 30. Generate fraud report [color: orange]
+Synthesis_Agent > Blackboard: 31. WRITE final_answer [color: orange]
+
+Controller > Blackboard: 32. Evaluate: final_answer exists [color: "#00bbff"]
+Controller > API_Gateway: 33. Complete [color: green]
+API_Gateway > Fraud_Analyst: 34. Report: 1 AML violation, escalate [color: green]
