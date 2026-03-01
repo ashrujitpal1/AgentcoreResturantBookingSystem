@@ -8,7 +8,10 @@ ENV UV_SYSTEM_PYTHON=1 \
     PYTHONUNBUFFERED=1 \
     DOCKER_CONTAINER=1 \
     AWS_REGION=us-east-1 \
-    AWS_DEFAULT_REGION=us-east-1
+    AWS_DEFAULT_REGION=us-east-1 \
+    MEMORY_ID=RestaurantBookingMemory-IxJiSt96Wl \
+    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=https://xray.us-east-1.amazonaws.com/v1/traces \
+    OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 
 
 
@@ -16,10 +19,6 @@ COPY requirements.txt requirements.txt
 # Install from requirements file
 RUN uv pip install -r requirements.txt
 
-
-
-
-RUN uv pip install aws-opentelemetry-distro==0.12.2
 
 
 # Signal that this is running in Docker for host binding logic
@@ -38,4 +37,4 @@ COPY . .
 
 # Use the full module path
 
-CMD ["opentelemetry-instrument", "python", "-m", "src.orchestrator"]
+CMD ["opentelemetry-instrument", "python", "-m", "uvicorn", "src.orchestrator:app", "--host", "0.0.0.0", "--port", "8080"]

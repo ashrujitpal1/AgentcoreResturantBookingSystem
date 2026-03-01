@@ -40,17 +40,25 @@ def create_prompt_bucket(bucket_name: str, region: str = "us-east-1"):
         raise
 
 
-def upload_prompts(bucket_name: str, prompts_dir: str = "prompts"):
+def upload_prompts(bucket_name: str, prompts_dir: str = "../prompts"):
     """Upload all prompts from local directory to S3"""
     s3 = boto3.client("s3")
+    
+    # Get absolute path
+    prompts_dir = os.path.abspath(prompts_dir)
+    
+    if not os.path.exists(prompts_dir):
+        print(f"❌ Prompts directory not found: {prompts_dir}")
+        return
     
     uploaded = 0
     for root, dirs, files in os.walk(prompts_dir):
         for file in files:
             if file.endswith(".md"):
                 local_path = os.path.join(root, file)
-                # Convert local path to S3 key
-                s3_key = local_path.replace(prompts_dir + "/", "prompts/")
+                # Convert local path to S3 key (preserve directory structure)
+                relative_path = os.path.relpath(local_path, prompts_dir)
+                s3_key = f"prompts/{relative_path}"
                 
                 with open(local_path, "r") as f:
                     content = f.read()

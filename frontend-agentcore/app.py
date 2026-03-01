@@ -9,25 +9,31 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from dotenv import load_dotenv
 load_dotenv()
 
-from src.orchestrator import handler
+import boto3
 
-class MockContext:
-    aws_request_id = "streamlit_request"
+# Get deployed runtime ARN
+AGENT_RUNTIME_ARN = os.getenv("AGENT_RUNTIME_ARN")
+if not AGENT_RUNTIME_ARN:
+    st.error("❌ AGENT_RUNTIME_ARN not found in .env file")
+    st.stop()
+
+# Extract runtime ID from ARN
+RUNTIME_ID = AGENT_RUNTIME_ARN.split('/')[-1]
+
+# Initialize Bedrock AgentCore client
+bedrock_agentcore = boto3.client('bedrock-agentcore')
 
 st.set_page_config(page_title="Restaurant Booking", page_icon="🍽️", layout="wide")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "session_id" not in st.session_state:
-    st.session_state.session_id = f"req_{uuid.uuid4()}"
+    st.session_state.session_id = f"session_{uuid.uuid4().hex}"  # 33+ chars
 if "user_id" not in st.session_state:
     st.session_state.user_id = ""
-if "restaurants" not in st.session_state:
-    st.session_state.restaurants = []
-if "selected_restaurant" not in st.session_state:
-    st.session_state.selected_restaurant = None
 if "debug_mode" not in st.session_state:
     st.session_state.debug_mode = False
+# Removed: restaurants and selected_restaurant - backend manages via AgentCore Memory
 
 with st.sidebar:
     st.title("🍽️ Restaurant Booking")
@@ -50,9 +56,7 @@ with st.sidebar:
         st.session_state.user_id = user_id_input
         st.session_state.phone = phone_input
         st.session_state.messages = []
-        st.session_state.restaurants = []
-        st.session_state.selected_restaurant = None
-        st.session_state.session_id = f"req_{uuid.uuid4()}"
+        st.session_state.session_id = f"session_{uuid.uuid4().hex}"
         st.rerun()
     
     st.markdown("---")
@@ -62,9 +66,7 @@ with st.sidebar:
     
     if st.button("🔄 New Session", use_container_width=True, help="Clear conversation and start fresh"):
         st.session_state.messages = []
-        st.session_state.restaurants = []
-        st.session_state.selected_restaurant = None
-        st.session_state.session_id = f"req_{uuid.uuid4()}"
+        st.session_state.session_id = f"session_{uuid.uuid4().hex}"
         st.success("New session started!")
         st.rerun()
 
@@ -92,23 +94,38 @@ if prompt := st.chat_input("Ask about restaurants or make a booking..."):
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             try:
-                # Invoke AgentCore Runtime handler directly
-                event = {
-                    "inputText": enhanced_prompt,
-                    "userId": st.session_state.user_id,
-                    "sessionId": st.session_state.session_id
-                }
+                # Invoke deployed AgentCore Runtime (stateless - no restaurant state)
+                response = bedrock_agentcore.invoke_agent_runtime(
+                    agentRuntimeArn=AGENT_RUNTIME_ARN,
+                    runtimeSessionId=st.session_state.session_id,
+                    runtimeUserId=st.session_state.user_id,
+                    payload=json.dumps({
+                        "inputText": enhanced_prompt,
+                        "userId": st.session_state.user_id
+                    }).encode('utf-8')
+                )
                 
-                result = handler(event, MockContext())
-                assistant_message = result.get('response', 'No response')
+                # Parse response - handle StreamingBody or direct string
+                raw_response = response.get('response') or response.get('body')
+                if hasattr(raw_response, 'read'):
+                    raw_response = raw_response.read().decode('utf-8')
+                if isinstance(raw_response, (bytes, bytearray)):
+                    raw_response = raw_response.decode('utf-8')
+                try:
+                    response_data = json.loads(raw_response or '{}')
+                    assistant_message = response_data.get('response', raw_response)
+                    # Backend manages all state via AgentCore Memory
+                except (json.JSONDecodeError, TypeError):
+                    assistant_message = str(raw_response)
                 
                 # Debug info
                 if st.session_state.debug_mode:
                     with st.expander("🐛 Debug Info", expanded=False):
                         st.json({
+                            "runtime_id": RUNTIME_ID,
                             "session_id": st.session_state.session_id,
                             "user_id": st.session_state.user_id,
-                            "metadata": result.get('metadata', {})
+                            "response": response
                         })
                 
                 # Remove restaurant IDs from display

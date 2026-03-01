@@ -2,12 +2,16 @@
 """
 Deploy AgentCore Runtime with Strands + LangGraph workflow.
 Follows agentcore-for-education pattern with proper IAM role creation.
+
+Run from project root: python3 deploy-scripts/deploy_agentcore_runtime.py
 """
 import sys
 import os
 
-# Add parent directory to path for utils import
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Ensure we're in project root
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(project_root)
+sys.path.insert(0, project_root)
 
 from bedrock_agentcore_starter_toolkit import Runtime
 from boto3.session import Session
@@ -43,7 +47,7 @@ print(f"\n✅ Using MEMORY_ID: {memory_id}")
 # Step 3: Configure AgentCore Runtime
 print("\n📦 Step 3: Configuring AgentCore Runtime...")
 agentcore_runtime = Runtime()
-agent_name = "restaurant_booking_orchestrator"
+agent_name = "restaurant_booking_agent"
 
 response = agentcore_runtime.configure(
     entrypoint="src/orchestrator.py",

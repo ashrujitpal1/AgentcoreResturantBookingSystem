@@ -142,9 +142,11 @@ def create_agentcore_runtime_role(agent_name: str = "restaurant_booking"):
             {
                 "Effect": "Allow",
                 "Action": [
-                    "ssm:GetParameter"
+                    "ssm:GetParameter",
+                    "ssm:GetParameters"
                 ],
                 "Resource": [
+                    f"arn:aws:ssm:{region}:{account_id}:parameter/app/restaurant-booking/*",
                     f"arn:aws:ssm:{region}:{account_id}:parameter/restaurant-booking/*"
                 ]
             },

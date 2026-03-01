@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.workflows import RestaurantBookingWorkflow
-from src.tools.mcp_client import get_mcp_tools
+from src.tools.mcp_gateway_client import get_mcp_client
 
 st.set_page_config(page_title="Restaurant Booking", page_icon="🍽️", layout="wide")
 
@@ -81,16 +81,17 @@ if st.session_state.is_first_message and st.session_state.user_id:
     with st.chat_message("assistant"):
         with st.spinner("Loading your preferences..."):
             try:
-                if 'workflow' not in st.session_state:
-                    st.session_state.workflow = RestaurantBookingWorkflow(get_mcp_tools())
-                
-                greeting_result = st.session_state.workflow.invoke(
-                    user_message="",
-                    user_id=st.session_state.user_id,
-                    session_id=st.session_state.session_id,
-                    phone=st.session_state.get('phone'),
-                    is_first_message=True
-                )
+                mcp_client = get_mcp_client()
+                with mcp_client:
+                    mcp_tools = mcp_client.list_tools_sync()
+                    workflow = RestaurantBookingWorkflow(mcp_tools)
+                    greeting_result = workflow.invoke(
+                        user_message="",
+                        user_id=st.session_state.user_id,
+                        session_id=st.session_state.session_id,
+                        phone=st.session_state.get('phone'),
+                        is_first_message=True
+                    )
                 
                 greeting_msg = greeting_result.get('final_response', '👋 Welcome!')
                 st.markdown(greeting_msg)
@@ -117,18 +118,19 @@ if prompt := st.chat_input("Ask about restaurants or make a booking..."):
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             try:
-                if 'workflow' not in st.session_state:
-                    st.session_state.workflow = RestaurantBookingWorkflow(get_mcp_tools())
-                
-                result = st.session_state.workflow.invoke(
-                    user_message=enhanced_prompt,
-                    user_id=st.session_state.user_id,
-                    session_id=st.session_state.session_id,
-                    restaurants=st.session_state.restaurants,
-                    selected_restaurant=st.session_state.selected_restaurant,
-                    phone=st.session_state.get('phone'),
-                    is_first_message=False
-                )
+                mcp_client = get_mcp_client()
+                with mcp_client:
+                    mcp_tools = mcp_client.list_tools_sync()
+                    workflow = RestaurantBookingWorkflow(mcp_tools)
+                    result = workflow.invoke(
+                        user_message=enhanced_prompt,
+                        user_id=st.session_state.user_id,
+                        session_id=st.session_state.session_id,
+                        restaurants=st.session_state.restaurants,
+                        selected_restaurant=st.session_state.selected_restaurant,
+                        phone=st.session_state.get('phone'),
+                        is_first_message=False
+                    )
                 
                 # Debug info
                 if st.session_state.debug_mode:

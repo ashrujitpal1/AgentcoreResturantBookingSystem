@@ -109,7 +109,12 @@ Previous: "Would you like to book a table at Spice Symphony?"
 User: "no, show me more options"
 Output: {"intent": "search", "confidence": 0.95, "extracted_entities": {"cuisine": null, "city": null, "num_guests": null, "date": null}}
 
-**Scenario 8: Out of scope - Weather**
+**Scenario 8: Providing booking details in response to a request**
+Previous: "To complete your booking, I need: your name, booking date, and booking time."
+User: "I am John Smith, tomorrow 7 PM"
+Output: {"intent": "booking", "confidence": 0.99, "extracted_entities": {"cuisine": null, "city": null, "num_guests": null, "date": "tomorrow 7 PM"}}
+
+**Scenario 9: Out of scope - Weather**
 User: "What's the weather today?"
 Output: {"intent": "out_of_scope", "confidence": 0.99, "extracted_entities": {"cuisine": null, "city": null, "num_guests": null, "date": null}}
 

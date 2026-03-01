@@ -32,6 +32,30 @@ class BookingAgent(Agent):
         self.prompt_manager = get_prompt_manager()
         self.mcp_tools = mcp_tools
     
+    def _call_mcp_tool(self, tool_name: str, arguments: Dict[str, Any], correlation_id: str) -> Dict[str, Any]:
+        """Call MCP tool via gateway client"""
+        from src.tools.mcp_gateway_client import get_mcp_client
+        
+        tool_map = {
+            "searchUserDetails": "searchUserDetails-target-1771948385___searchUserDetails",
+            "registerUser": "registerUser-target-1771948386___registerUser",
+            "tokenAmountCalculation": "tokenAmountCalculation-target-1771948387___tokenAmountCalculation",
+            "bookATable": "bookATable-target-1771948387___bookATable",
+            "paymentAPI": "paymentAPI-target-1771948388___paymentAPI",
+            "getCurrentDateTime": "getCurrentDateTime-target-1771948388___getCurrentDateTime"
+        }
+        
+        full_tool_name = tool_map.get(tool_name, tool_name)
+        tool_use_id = self.generate_request_id(correlation_id, tool_name)
+        
+        mcp_client = get_mcp_client()
+        return mcp_client.call_tool_sync(
+            name=full_tool_name,
+            arguments=arguments,
+            tool_use_id=tool_use_id
+        )
+    
+
     def process(
         self,
         user_message: str,
@@ -42,12 +66,10 @@ class BookingAgent(Agent):
         Execute SAGA workflow for booking with compensation.
         
         SAGA Steps:
-        1. Session booking limit check
-        2. User validation
-        3. User registration (if needed)
-        4. Token calculation
-        5. Table booking
-        6. Payment processing
+        1. User validation (must be pre-registered)
+        2. Token calculation
+        3. Table booking
+        4. Payment processing
         """
         # Check if user already booked in this session
         if context and context.get("booking_completed"):
@@ -152,15 +174,13 @@ class BookingAgent(Agent):
         # Get current date/time for the LLM to use
         current_date = None
         current_time = None
-        tool = self.mcp_tools.get("getCurrentDateTime")
-        if tool:
-            try:
-                result = tool(timezone="America/New_York")
-                current_date = result.get("currentDate") or result.get("date")
-                current_time = result.get("currentTime") or result.get("time")
-                print(f"[DEBUG] Booking Agent - Current date/time from tool: {current_date} {current_time}")
-            except Exception as e:
-                print(f"[DEBUG] Booking Agent - Error getting current date/time: {e}")
+        try:
+            result = self._call_mcp_tool("getCurrentDateTime", {"timezone": "America/New_York"}, correlation_id)
+            current_date = result.get("currentDate") or result.get("date")
+            current_time = result.get("currentTime") or result.get("time")
+            print(f"[DEBUG] Booking Agent - Current date/time from tool: {current_date} {current_time}")
+        except Exception as e:
+            print(f"[DEBUG] Booking Agent - Error getting current date/time: {e}")
         
         # Add current date to context for LLM
         if current_date:
@@ -202,22 +222,24 @@ class BookingAgent(Agent):
             
             print(f"[DEBUG] Booking Agent - Params after LLM extraction: {params}")
             
-            # Merge with context if available (current session takes priority)
-            if context and "restaurants" in context and context["restaurants"]:
-                # If user mentioned restaurant name, match it
-                if len(context["restaurants"]) > 1:
-                    for rest in context["restaurants"]:
-                        if rest.get('name', '').lower() in user_message.lower():
+            # If no restaurant ID yet, re-fetch from DB using name + city
+            if params.get("restaurantName") and params.get("cityName") and not params.get("restaurantId"):
+                print(f"[DEBUG] Booking Agent - Re-fetching restaurant: {params['restaurantName']} in {params['cityName']}")
+                try:
+                    fetch_result = self._call_mcp_tool(
+                        "fetchRestaurantDetails",
+                        {"city": params["cityName"]},
+                        correlation_id
+                    )
+                    
+                    restaurants = fetch_result.get("restaurants", [])
+                    for rest in restaurants:
+                        if rest.get('name', '').lower() == params["restaurantName"].lower():
                             params["restaurantId"] = rest.get("restaurantId")
-                            params["restaurantName"] = rest.get("name")
-                            params["cityName"] = rest.get("city")
+                            print(f"[DEBUG] Booking Agent - Re-fetched restaurant: {rest.get('name')} (ID: {rest.get('restaurantId')})")
                             break
-                elif len(context["restaurants"]) == 1:
-                    # Only one restaurant, use it
-                    rest = context["restaurants"][0]
-                    params["restaurantId"] = rest.get("restaurantId")
-                    params["restaurantName"] = rest.get("name")
-                    params["cityName"] = rest.get("city")
+                except Exception as e:
+                    print(f"[DEBUG] Booking Agent - Error re-fetching restaurant: {e}")
             
             print(f"[DEBUG] Booking Agent - Final params: {params}")
             
@@ -244,60 +266,53 @@ class BookingAgent(Agent):
         if any(term in date_str.lower() for term in relative_terms):
             print(f"[DEBUG] Booking Agent - Detected relative date: {date_str}")
             
-            # Call getCurrentDateTime tool
-            tool = self.mcp_tools.get("getCurrentDateTime")
-            print(f"[DEBUG] Booking Agent - getCurrentDateTime tool found: {tool is not None}")
-            
-            if tool:
-                try:
-                    print(f"[DEBUG] Booking Agent - Calling getCurrentDateTime with timezone=America/New_York")
-                    result = tool(timezone="America/New_York")
-                    print(f"[DEBUG] Booking Agent - getCurrentDateTime raw result: {result}")
+            try:
+                print(f"[DEBUG] Booking Agent - Calling getCurrentDateTime with timezone=America/New_York")
+                result = self._call_mcp_tool("getCurrentDateTime", {"timezone": "America/New_York"}, correlation_id)
+                print(f"[DEBUG] Booking Agent - getCurrentDateTime raw result: {result}")
+                
+                current_date = result.get("currentDate") or result.get("date")
+                current_time = result.get("currentTime") or result.get("time")
+                
+                print(f"[DEBUG] Booking Agent - Extracted current_date: {current_date}, current_time: {current_time}")
+                
+                if current_date:
+                    # Use LLM to calculate relative date
+                    date_conversion_prompt = self.prompt_manager.load_prompt_file(
+                        "booking_agent",
+                        "date_conversion_prompt.md",
+                        self.prompt_version
+                    )
                     
-                    current_date = result.get("currentDate") or result.get("date")
-                    current_time = result.get("currentTime") or result.get("time")
-                    
-                    print(f"[DEBUG] Booking Agent - Extracted current_date: {current_date}, current_time: {current_time}")
-                    
-                    if current_date:
-                        # Use LLM to calculate relative date
-                        date_conversion_prompt = self.prompt_manager.load_prompt_file(
-                            "booking_agent",
-                            "date_conversion_prompt.md",
-                            self.prompt_version
-                        )
-                        
-                        prompt = f"""Current date is {current_date}. Convert the relative date '{date_str}' to YYYY-MM-DD format.
+                    prompt = f"""Current date is {current_date}. Convert the relative date '{date_str}' to YYYY-MM-DD format.
 Return ONLY the date in YYYY-MM-DD format, nothing else."""
-                        
-                        print(f"[DEBUG] Booking Agent - Calling LLM for date conversion with prompt: {prompt[:100]}...")
-                        
-                        messages = [{"role": "user", "content": [{"text": prompt}]}]
-                        response = self.invoke_llm(
-                            messages=messages,
-                            system_prompt=date_conversion_prompt,
-                            temperature=0.0,
-                            max_tokens=50
-                        )
-                        
-                        normalized = response["content"].strip()
-                        print(f"[DEBUG] Booking Agent - LLM date conversion response: {normalized}")
-                        
-                        # Extract date if wrapped in text
-                        date_match = re.search(r'\d{4}-\d{2}-\d{2}', normalized)
-                        if date_match:
-                            normalized = date_match.group(0)
-                        
-                        print(f"[DEBUG] Booking Agent - Final normalized date: '{date_str}' -> '{normalized}'")
-                        return normalized
-                    else:
-                        print(f"[DEBUG] Booking Agent - No current_date found in tool result")
-                except Exception as e:
-                    print(f"[DEBUG] Booking Agent - Date normalization error: {e}")
-                    import traceback
-                    print(f"[DEBUG] Booking Agent - Traceback: {traceback.format_exc()}")
-            else:
-                print(f"[DEBUG] Booking Agent - getCurrentDateTime tool not found in mcp_tools")
+                    
+                    print(f"[DEBUG] Booking Agent - Calling LLM for date conversion with prompt: {prompt[:100]}...")
+                    
+                    messages = [{"role": "user", "content": [{"text": prompt}]}]
+                    response = self.invoke_llm(
+                        messages=messages,
+                        system_prompt=date_conversion_prompt,
+                        temperature=0.0,
+                        max_tokens=50
+                    )
+                    
+                    normalized = response["content"].strip()
+                    print(f"[DEBUG] Booking Agent - LLM date conversion response: {normalized}")
+                    
+                    # Extract date if wrapped in text
+                    date_match = re.search(r'\d{4}-\d{2}-\d{2}', normalized)
+                    if date_match:
+                        normalized = date_match.group(0)
+                    
+                    print(f"[DEBUG] Booking Agent - Final normalized date: '{date_str}' -> '{normalized}'")
+                    return normalized
+                else:
+                    print(f"[DEBUG] Booking Agent - No current_date found in tool result")
+            except Exception as e:
+                print(f"[DEBUG] Booking Agent - Date normalization error: {e}")
+                import traceback
+                print(f"[DEBUG] Booking Agent - Traceback: {traceback.format_exc()}")
         else:
             print(f"[DEBUG] Booking Agent - Date '{date_str}' is not relative, returning as-is")
         
@@ -357,22 +372,21 @@ Return ONLY the date in YYYY-MM-DD format, nothing else."""
             user = self._saga_step_user_validation(params, correlation_id)
             compensation_stack.append(("user_validation", None))  # Read-only, no compensation
             
-            # Step 2: User registration (if needed)
+            # User must be pre-registered
             if not user:
-                user_id = self._saga_step_user_registration(params, correlation_id)
-                compensation_stack.append(("user_registration", user_id))
-            else:
-                user_id = user.get("userId")
+                raise Exception(f"User with phone {params.get('userMobileNo')} is not registered. Please register first.")
             
-            # Step 3: Token calculation
+            user_id = user.get("userId")
+            
+            # Step 2: Token calculation
             token_amount = self._saga_step_token_calculation(params, correlation_id)
             compensation_stack.append(("token_calculation", None))  # Deterministic, no compensation
             
-            # Step 4: Table booking
+            # Step 3: Table booking
             booking_id = self._saga_step_table_booking(params, token_amount, correlation_id)
             compensation_stack.append(("table_booking", booking_id))
             
-            # Step 5: Payment processing
+            # Step 4: Payment processing
             payment_id = self._saga_step_payment(user_id, params, booking_id, token_amount, correlation_id)
             compensation_stack.append(("payment", payment_id))
             
@@ -390,66 +404,70 @@ Return ONLY the date in YYYY-MM-DD format, nothing else."""
     
     def _saga_step_user_validation(self, params: Dict, correlation_id: str) -> Optional[Dict]:
         """Step 1: Validate user exists"""
-        tool = self.mcp_tools.get("searchUserDetails")
-        if not tool:
-            raise Exception("searchUserDetails tool not available")
+        result = self._call_mcp_tool("searchUserDetails", {"userMobileNo": params.get("userMobileNo")}, correlation_id)
         
-        result = tool(userMobileNo=params.get("userMobileNo"))
-        return result.get("user") if result.get("found") else None
+        # Parse MCP response - content is in content[0]['text'] as JSON string
+        import json
+        if 'content' in result and len(result['content']) > 0:
+            response_text = result['content'][0].get('text', '{}')
+            response_data = json.loads(response_text)
+            # Check if user found (has userId)
+            if response_data.get('userId'):
+                return response_data
+            return None
+        
+        # Direct response format (fallback)
+        if result.get('userId'):
+            return result
+        return None
     
-    def _saga_step_user_registration(self, params: Dict, correlation_id: str) -> str:
-        """Step 2: Register new user"""
-        tool = self.mcp_tools.get("registerUser")
-        if not tool:
-            raise Exception("registerUser tool not available")
-        
-        request_id = self.generate_request_id(correlation_id, "register")
-        
-        result = tool(
-            username=params.get("userName"),
-            mobileNo=params.get("userMobileNo"),
-            userCity=params.get("cityName"),
-            requestId=request_id
-        )
-        
-        # Extract userId from response (handle different response formats)
-        user_id = result.get("userId") or result.get("user_id") or result.get("id")
-        if not user_id:
-            raise Exception(f"No user ID returned from registerUser: {result}")
-        return user_id
+
     
     def _saga_step_token_calculation(self, params: Dict, correlation_id: str) -> float:
         """Step 3: Calculate booking deposit"""
-        tool = self.mcp_tools.get("tokenAmountCalculation")
-        if not tool:
-            raise Exception("tokenAmountCalculation tool not available")
+        result = self._call_mcp_tool("tokenAmountCalculation", {"noOfGuests": params.get("noOfGuests", 2)}, correlation_id)
         
-        result = tool(noOfGuests=params.get("noOfGuests", 2))
-        return result.get("tokenAmount", 0.0)
+        # Parse MCP response - content is in content[0]['text'] as JSON string
+        import json
+        token_amount = 0.0
+        if 'content' in result and len(result['content']) > 0:
+            response_text = result['content'][0].get('text', '{}')
+            response_data = json.loads(response_text)
+            token_amount = response_data.get("tokenAmount", 0.0)
+        else:
+            token_amount = result.get("tokenAmount", 0.0)
+        
+        print(f"[DEBUG] Token calculation: {params.get('noOfGuests')} guests -> ${token_amount}")
+        return token_amount
     
     def _saga_step_table_booking(self, params: Dict, token_amount: float, correlation_id: str) -> str:
         """Step 4: Book table"""
-        tool = self.mcp_tools.get("bookATable")
-        if not tool:
-            raise Exception("bookATable tool not available")
-        
-        request_id = self.generate_request_id(correlation_id, "booking")
-        
-        result = tool(
-            restaurantId=params.get("restaurantId"),
-            userName=params.get("userName"),
-            userMobileNo=params.get("userMobileNo"),
-            date=params.get("date"),
-            time=params.get("time"),
-            type="dinner",
-            cityName=params.get("cityName"),
-            noOfGuests=params.get("noOfGuests"),
-            tokenAmount=token_amount,
-            requestId=request_id
+        result = self._call_mcp_tool(
+            "bookATable",
+            {
+                "restaurantId": params.get("restaurantId"),
+                "userName": params.get("userName"),
+                "userMobileNo": params.get("userMobileNo"),
+                "date": params.get("date"),
+                "time": params.get("time"),
+                "type": "dinner",
+                "cityName": params.get("cityName"),
+                "noOfGuests": params.get("noOfGuests"),
+                "tokenAmount": token_amount,
+                "requestId": self.generate_request_id(correlation_id, "bookATable")
+            },
+            correlation_id
         )
         
-        # Extract bookingId from response (handle different response formats)
-        booking_id = result.get("bookingId") or result.get("booking_id") or result.get("id")
+        # Parse MCP response
+        import json
+        if 'content' in result and len(result['content']) > 0:
+            response_text = result['content'][0].get('text', '{}')
+            response_data = json.loads(response_text)
+            booking_id = response_data.get("bookingId") or response_data.get("booking_id") or response_data.get("id")
+        else:
+            booking_id = result.get("bookingId") or result.get("booking_id") or result.get("id")
+        
         if not booking_id:
             raise Exception(f"No booking ID returned from bookATable: {result}")
         return booking_id
@@ -463,23 +481,28 @@ Return ONLY the date in YYYY-MM-DD format, nothing else."""
         correlation_id: str
     ) -> str:
         """Step 5: Process payment"""
-        tool = self.mcp_tools.get("paymentAPI")
-        if not tool:
-            raise Exception("paymentAPI tool not available")
-        
-        request_id = self.generate_request_id(correlation_id, "payment")
-        
-        result = tool(
-            userId=user_id,
-            restaurantId=params.get("restaurantId"),
-            bookingId=booking_id,
-            tokenAmount=token_amount,
-            paymentMethod="credit_card",
-            requestId=request_id
+        result = self._call_mcp_tool(
+            "paymentAPI",
+            {
+                "userId": user_id,
+                "restaurantId": params.get("restaurantId"),
+                "bookingId": booking_id,
+                "tokenAmount": token_amount,
+                "paymentMethod": "credit_card",
+                "requestId": self.generate_request_id(correlation_id, "paymentAPI")
+            },
+            correlation_id
         )
         
-        # Extract paymentId from response (handle different response formats)
-        payment_id = result.get("paymentId") or result.get("payment_id") or result.get("id")
+        # Parse MCP response
+        import json
+        if 'content' in result and len(result['content']) > 0:
+            response_text = result['content'][0].get('text', '{}')
+            response_data = json.loads(response_text)
+            payment_id = response_data.get("paymentId") or response_data.get("payment_id") or response_data.get("id")
+        else:
+            payment_id = result.get("paymentId") or result.get("payment_id") or result.get("id")
+        
         if not payment_id:
             raise Exception(f"No payment ID returned from paymentAPI: {result}")
         return payment_id
@@ -495,9 +518,6 @@ Return ONLY the date in YYYY-MM-DD format, nothing else."""
             elif step == "table_booking" and resource_id:
                 log.append(f"🔄 Cancelling booking {resource_id}")
                 # Call cancel booking API
-            elif step == "user_registration" and resource_id:
-                log.append(f"🔄 Deleting user {resource_id}")
-                # Call delete user API
         
         return log
     

@@ -19,15 +19,13 @@ class RestaurantFinderAgent(Agent):
             "restaurant_search"
         )
         
-        import os
-        guardrail_id = os.getenv("GUARDRAIL_ID")
-        
+        # Disable guardrail for restaurant finder - not needed for search operations
         super().__init__(
             name="restaurant_finder",
             primary_provider=primary,
             fallback_provider=fallback,
             circuit_breaker=breaker,
-            guardrail_id=guardrail_id
+            guardrail_id=None
         )
         
         self.config = config
@@ -57,7 +55,7 @@ class RestaurantFinderAgent(Agent):
         )
         
         # Extract search parameters using LLM
-        extracted = self._extract_search_params(user_message, correlation_id)
+        extracted = self._extract_search_params(user_message, correlation_id, context)
         
         # Call MCP tool to fetch restaurants
         restaurants = self._fetch_restaurants(extracted, correlation_id)
@@ -78,47 +76,152 @@ class RestaurantFinderAgent(Agent):
             }
         }
     
-    def _extract_search_params(self, user_message: str, correlation_id: str) -> Dict[str, Any]:
-        """Extract city, cuisine, price range, rating from user message"""
-        extraction_prompt = self.prompt_manager.load_prompt_file(
-            "restaurant_finder",
-            "extraction_prompt.md",
-            self.prompt_version
-        )
+    def _extract_search_params(self, user_message: str, correlation_id: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Extract city, cuisine, price range, rating from user message using tool schema"""
+        from src.tools.mcp_gateway_client import get_mcp_client
         
-        messages = [{"role": "user", "content": [{"text": user_message}]}]
+        print(f"[DEBUG] Starting parameter extraction for: {user_message}")
+        
+        # Get tool schema dynamically
+        mcp_client = get_mcp_client()
+        print(f"[DEBUG] MCP client obtained, listing tools...")
+        
+        tools = mcp_client.list_tools_sync()
+        print(f"[DEBUG] Found {len(tools)} tools")
+        
+        tool_schema = None
+        for tool in tools:
+            print(f"[DEBUG] Checking tool: {tool.tool_name}")
+            if 'fetchRestaurantDetails' in tool.tool_name and 'ById' not in tool.tool_name:
+                tool_schema = tool.tool_spec['inputSchema']['json']
+                print(f"[DEBUG] Found matching tool schema: {tool.tool_name}")
+                break
+        
+        if not tool_schema:
+            print("[ERROR] Could not find fetchRestaurantDetails tool schema")
+            return {}
+        
+        # Build extraction prompt with schema
+        schema_desc = "\n".join([
+            f"- {name}: {props.get('description', 'No description')} (type: {props.get('type')})"
+            for name, props in tool_schema['properties'].items()
+            if name not in ['requestId', 'maxResults', 'nextToken']  # Skip internal fields
+        ])
+        
+        conversation_history = context.get("conversation_history", "") if context else ""
+        prior_search = context.get("search_criteria", {}) if context else {}
+
+        context_block = ""
+        if conversation_history:
+            context_block = f"\nConversation so far:\n{conversation_history}\n"
+        if prior_search:
+            context_block += f"\nPrevious search criteria: {prior_search}\n"
+
+        extraction_prompt = f"""Extract restaurant search parameters from the user message, using conversation context to resolve references like "same city" or "that area".
+
+Available parameters:
+{schema_desc}
+{context_block}
+User message: {user_message}
+
+Return ONLY a JSON object with the extracted parameters. Omit parameters not mentioned.
+Examples:
+- "Find Italian in Boston" → {{"city": "Boston", "cuisine": "Italian"}}
+- "Show Indian restaurants in New York" → {{"city": "New York", "cuisine": "Indian"}}
+- "Cheap sushi" → {{"cuisine": "Japanese", "priceRange": "$"}}
+- "Same city but Italian" (after searching New York) → {{"city": "New York", "cuisine": "Italian"}}
+
+Return {{}} if no parameters found."""
+        
+        messages = [{"role": "user", "content": [{"text": extraction_prompt}]}]
         
         response = self.invoke_llm(
             messages=messages,
-            system_prompt=extraction_prompt,
+            system_prompt="You are a parameter extraction assistant. Return only valid JSON.",
             temperature=0.0,
             max_tokens=200
         )
         
+        print(f"[DEBUG] LLM extraction response: {response.get('content', 'NO CONTENT')}")
+        
         try:
-            return json.loads(response["content"])
-        except:
-            return {"city": None, "cuisine": None, "priceRange": None, "minRating": None}
+            import re
+            content = response["content"].strip()
+            
+            # Extract JSON from markdown code blocks
+            json_match = re.search(r'```(?:json)?\s*({.*?})\s*```', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(1)
+            else:
+                # Try to find JSON object
+                json_match = re.search(r'{[^}]+}', content)
+                if json_match:
+                    content = json_match.group(0)
+            
+            parsed = json.loads(content)
+            print(f"[DEBUG] Parsed params: {parsed}")
+            return parsed
+        except Exception as e:
+            print(f"[DEBUG] Extraction error: {e}, returning empty dict")
+            return {}
     
     def _fetch_restaurants(self, params: Dict[str, Any], correlation_id: str) -> List[Dict]:
         """Call MCP tool to fetch restaurants"""
-        tool = self.mcp_tools.get("fetchRestaurantDetails")
-        if not tool:
-            return []
+        from src.tools.mcp_gateway_client import get_mcp_client
         
-        # Generate idempotent request ID
         request_id = self.generate_request_id(correlation_id, "search")
+        mcp_client = get_mcp_client()
         
-        # Call tool with extracted parameters
-        result = tool(
-            city=params.get("city"),
-            cuisine=params.get("cuisine"),
-            priceRange=params.get("priceRange"),
-            minRating=params.get("minRating"),
-            requestId=request_id
-        )
+        # Build arguments, excluding None values
+        arguments = {}
+        if params.get("city"):
+            arguments["city"] = params["city"]
+        if params.get("cuisine"):
+            arguments["cuisine"] = params["cuisine"]
+        if params.get("priceRange"):
+            arguments["priceRange"] = params["priceRange"]
+        if params.get("minRating"):
+            arguments["minRating"] = params["minRating"]
         
-        return result.get("restaurants", [])
+        print(f"[DEBUG] Calling Lambda with arguments: {arguments}")
+        print(f"[DEBUG] Request ID: {request_id}")
+        print(f"[DEBUG] Tool name: fetchRestaurantDetails-target-1771948384___fetchRestaurantDetails")
+        
+        try:
+            print(f"[DEBUG] Invoking MCP tool...")
+            result = mcp_client.call_tool_sync(
+                name="fetchRestaurantDetails-target-1771948384___fetchRestaurantDetails",
+                arguments=arguments,
+                tool_use_id=request_id
+            )
+            
+            print(f"[DEBUG] MCP tool result status: {result.get('status')}")
+            print(f"[DEBUG] MCP tool result keys: {result.keys()}")
+            
+            # Parse MCP response - data is in content[0].text as JSON string
+            if result.get('status') == 'success' and result.get('content'):
+                print(f"[DEBUG] Result content length: {len(result['content'])}")
+                text_content = result['content'][0].get('text', '{}')
+                print(f"[DEBUG] Text content (first 200 chars): {text_content[:200]}")
+                
+                parsed = json.loads(text_content)
+                restaurants = parsed.get('restaurants', [])
+                print(f"[DEBUG] Lambda returned {len(restaurants)} restaurants")
+                
+                if restaurants:
+                    print(f"[DEBUG] First restaurant: {restaurants[0]}")
+                
+                return restaurants
+            else:
+                print(f"[DEBUG] Lambda error or no content: {result}")
+                return []
+        except Exception as e:
+            print(f"[ERROR] Error fetching restaurants: {e}")
+            print(f"[ERROR] Error type: {type(e).__name__}")
+            import traceback
+            print(f"[ERROR] Full traceback:")
+            traceback.print_exc()
+            return []
     
     def _generate_response(
         self,

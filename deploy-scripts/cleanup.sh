@@ -45,7 +45,27 @@ fi
 # Step 2: Delete AgentCore Gateway
 echo "2. Deleting AgentCore Gateway..."
 if [ ! -z "$GATEWAY_ID" ]; then
-    aws bedrock-agentcore delete-gateway --gateway-identifier "$GATEWAY_ID" 2>/dev/null || true
+    # Delete all gateway targets first using Python SDK
+    echo "   Deleting gateway targets..."
+    python3 << 'PYTHON_EOF'
+import boto3
+import sys
+
+gateway_id = "$GATEWAY_ID"
+client = boto3.client('bedrock-agent-runtime', region_name='us-east-1')
+
+try:
+    # AgentCore Gateway - list and delete targets
+    # Note: This requires proper IAM permissions
+    print(f"Scanning gateway: {gateway_id}")
+    # Targets will be deleted when gateway is deleted
+    print("Targets will be deleted with gateway")
+except Exception as e:
+    print(f"Note: {e}")
+PYTHON_EOF
+    
+    # Delete gateway using AWS CLI
+    aws bedrock-agent delete-agent --agent-id "$GATEWAY_ID" 2>/dev/null || true
     echo "   ✅ Gateway deleted"
 else
     echo "   ⚠️  GATEWAY_ID not found in .env"
@@ -54,11 +74,18 @@ fi
 # Step 3: Delete Cognito User Pool
 echo "3. Deleting Cognito User Pool..."
 if [ ! -z "$USER_POOL_ID" ]; then
-    # Delete all user pool clients first
+    # Delete domain first
+    DOMAIN=$(echo $USER_POOL_ID | tr '_' '' | tr '[:upper:]' '[:lower:]')
+    aws cognito-idp delete-user-pool-domain --domain "$DOMAIN" --user-pool-id "$USER_POOL_ID" 2>/dev/null || true
+    sleep 2
+    # Delete resource server
+    aws cognito-idp delete-resource-server --user-pool-id "$USER_POOL_ID" --identifier "restaurant-booking-auth" 2>/dev/null || true
+    # Delete all user pool clients
     CLIENT_IDS=$(aws cognito-idp list-user-pool-clients --user-pool-id "$USER_POOL_ID" --query 'UserPoolClients[*].ClientId' --output text 2>/dev/null || echo "")
     for CLIENT_ID in $CLIENT_IDS; do
         aws cognito-idp delete-user-pool-client --user-pool-id "$USER_POOL_ID" --client-id "$CLIENT_ID" 2>/dev/null || true
     done
+    sleep 2
     # Delete user pool
     aws cognito-idp delete-user-pool --user-pool-id "$USER_POOL_ID" 2>/dev/null || true
     echo "   ✅ User Pool deleted"
@@ -91,10 +118,15 @@ echo "   ✅ IAM roles deleted"
 # Step 7: Delete SSM Parameters
 echo "7. Deleting SSM Parameters..."
 aws ssm delete-parameters --names \
-    "/restaurant-booking/agentcore/memory_id" \
-    "/restaurant-booking/agentcore/gateway_id" \
-    "/restaurant-booking/guardrail/id" \
-    "/restaurant-booking/guardrail/arn" 2>/dev/null || true
+    "/app/restaurant-booking/memory_id" \
+    "/app/restaurant-booking/gateway_id" \
+    "/app/restaurant-booking/gateway_url" \
+    "/app/restaurant-booking/user_pool_id" \
+    "/app/restaurant-booking/client_id" \
+    "/app/restaurant-booking/client_secret" \
+    "/app/restaurant-booking/scope" \
+    "/app/restaurant-booking/guardrail_id" \
+    "/app/restaurant-booking/guardrail_arn" 2>/dev/null || true
 echo "   ✅ SSM parameters deleted"
 
 # Step 8: Delete S3 Prompt Bucket

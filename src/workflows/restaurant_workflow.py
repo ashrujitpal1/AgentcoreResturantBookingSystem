@@ -90,12 +90,27 @@ class RestaurantBookingWorkflow:
         """Entry point: Classify intent using IntentClassifierAgent"""
         user_message = state["messages"][-1].content
         correlation_id = state["correlation_id"]
+        context = state.get("context") or {}
         
         print(f"[DEBUG] Entry Router - User message: {user_message}")
-        print(f"[DEBUG] Entry Router - Existing context: {state.get('context')}")
+        print(f"[DEBUG] Entry Router - Existing context: {context}")
         
+        # Build full conversation trail: memory history + in-session messages
+        memory_history = context.get("conversation_history", "")
+        session_turns = []
+        for msg in state.get("messages", [])[:-1]:  # exclude current user message
+            if isinstance(msg, HumanMessage):
+                session_turns.append(f"USER: {msg.content}")
+            elif isinstance(msg, AIMessage):
+                session_turns.append(f"ASSISTANT: {msg.content}")
+        session_history = "\n".join(session_turns)
+        full_history = f"{memory_history}\n{session_history}".strip()
+
+        # Inject full history into context for intent classifier
+        router_context = {**(context or {}), "conversation_history": full_history}
+
         # Call Strands agent with context (includes last_response from memory)
-        result = self.intent_classifier.process(user_message, correlation_id, state.get('context'))
+        result = self.intent_classifier.process(user_message, correlation_id, router_context)
         
         intent = result.get("intent")
         
@@ -147,13 +162,16 @@ class RestaurantBookingWorkflow:
         # Add AI response to messages
         ai_message = AIMessage(content=result.get("content", ""))
         
+        # Merge new search context into existing context (preserve conversation_history)
+        updated_context = {**(state.get("context") or {}), **(result.get("context") or {})}
+
         return {
             "messages": [ai_message],
-            "restaurants": restaurants,  # ALWAYS use new search results, never fallback to state
+            "restaurants": restaurants,
             "selected_restaurant": selected_restaurant,
             "next_agent": result.get("handoff_to"),
             "current_agent": "restaurant_finder",
-            "context": result.get("context"),
+            "context": updated_context,
             "final_response": result.get("content", "I couldn't find any restaurants matching your criteria.")
         }
     
@@ -177,16 +195,19 @@ class RestaurantBookingWorkflow:
         print(f"[DEBUG] Booking Agent - State restaurants: {state.get('restaurants')}")
         print(f"[DEBUG] Booking Agent - Partial params: {state.get('partial_booking_params')}")
         
-        # Use LLM to extract restaurant from conversation history
+        # Resolve restaurant from context (already loaded from memory)
         if context.get("selected_restaurant"):
             context["restaurants"] = [context["selected_restaurant"]]
-            print(f"[DEBUG] Booking Agent - Using selected_restaurant: {context['selected_restaurant'].get('name')}")
-        elif context.get("conversation_history") and state.get("restaurants"):
-            # Let LLM extract restaurant from conversation
-            from src.core import AmazonNovaProvider
-            bedrock = AmazonNovaProvider("amazon.nova-lite-v1:0", region=os.getenv('AWS_REGION', 'us-east-1'))
-            restaurant_list = "\n".join([f"{r.get('name')} (ID: {r.get('restaurantId')})" for r in state["restaurants"]])
-            match_prompt = f"""Extract restaurant ID from conversation.
+            print(f"[DEBUG] Booking Agent - Using selected_restaurant from memory: {context['selected_restaurant'].get('name')}")
+        elif state.get("restaurants"):
+            context["restaurants"] = state["restaurants"]
+            print(f"[DEBUG] Booking Agent - Using restaurants from memory: {len(context['restaurants'])} found")
+            
+            if len(context["restaurants"]) > 1 and context.get("conversation_history"):
+                from src.core import AmazonNovaProvider
+                bedrock = AmazonNovaProvider("amazon.nova-lite-v1:0", region=os.getenv('AWS_REGION', 'us-east-1'))
+                restaurant_list = "\n".join([f"{r.get('name')} (ID: {r.get('restaurantId')})" for r in context["restaurants"]])
+                match_prompt = f"""Extract restaurant ID from conversation.
 
 Conversation:
 {context['conversation_history']}
@@ -197,36 +218,36 @@ Available restaurants:
 {restaurant_list}
 
 Which restaurant is mentioned? Return ONLY the restaurant ID."""
-            
-            try:
-                match_response = bedrock.invoke(
-                    messages=[{"role": "user", "content": [{"text": match_prompt}]}],
-                    temperature=0.0,
-                    max_tokens=50
-                )
-                matched_id = match_response["content"].strip()
-                for rest in state["restaurants"]:
-                    if rest.get("restaurantId") == matched_id:
-                        context["restaurants"] = [rest]
-                        print(f"[DEBUG] Booking Agent - LLM extracted from conversation: {rest.get('name')}")
-                        break
-                else:
-                    context["restaurants"] = state["restaurants"]
-            except Exception as e:
-                print(f"[DEBUG] Booking Agent - LLM error: {e}")
-                context["restaurants"] = state["restaurants"]
-        elif state.get("restaurants"):
-            context["restaurants"] = state["restaurants"]
-            print(f"[DEBUG] Booking Agent - Using state restaurants: {len(context['restaurants'])}")
+                
+                try:
+                    match_response = bedrock.invoke(
+                        messages=[{"role": "user", "content": [{"text": match_prompt}]}],
+                        temperature=0.0,
+                        max_tokens=50
+                    )
+                    matched_id = match_response["content"].strip()
+                    for rest in context["restaurants"]:
+                        if rest.get("restaurantId") == matched_id:
+                            context["restaurants"] = [rest]
+                            print(f"[DEBUG] Booking Agent - LLM extracted from conversation: {rest.get('name')}")
+                            break
+                except Exception as e:
+                    print(f"[DEBUG] Booking Agent - LLM extraction error: {e}")
         
         # Add accumulated partial params from state (loaded from memory)
         if state.get("partial_booking_params"):
             context["partial_params"] = state["partial_booking_params"]
         
-        # Add conversation history from messages for context
-        if len(state.get("messages", [])) > 1:
-            prev_messages = [msg.content for msg in state["messages"][:-1]]
-            context["memory_context"] = " ".join(prev_messages[-3:])  # Last 3 turns
+        # Build structured conversation history from in-session messages + memory history
+        memory_history = context.get("conversation_history", "")
+        session_turns = []
+        for msg in state.get("messages", []):
+            if isinstance(msg, HumanMessage):
+                session_turns.append(f"USER: {msg.content}")
+            elif isinstance(msg, AIMessage):
+                session_turns.append(f"ASSISTANT: {msg.content}")
+        session_history = "\n".join(session_turns)
+        context["conversation_history"] = f"{memory_history}\n{session_history}".strip()
         
         print(f"[DEBUG] Booking Agent - Final context passed to agent: {context}")
         
@@ -346,18 +367,16 @@ Please try again or contact support."""
     
     # ========== PUBLIC API ==========
     
-    def invoke(self, user_message: str, user_id: str, session_id: str, restaurants: list = None, selected_restaurant: dict = None, phone: str = None, is_first_message: bool = False) -> Dict[str, Any]:
+    def invoke(self, user_message: str, user_id: str, session_id: str, 
+               is_first_message: bool = False) -> Dict[str, Any]:
         """
         Invoke workflow with user message.
-        Retrieves conversation history from AgentCore Memory.
+        Retrieves ALL context from AgentCore Memory (stateless design).
         
         Args:
             user_message: User's input message
             user_id: User identifier (actorId)
             session_id: Session identifier (used as correlation_id for tracing)
-            restaurants: Restaurant list from previous search (from Streamlit session)
-            selected_restaurant: Selected restaurant (from Streamlit session)
-            phone: User phone number
             is_first_message: Whether this is the first message (trigger greeting)
         
         Returns:
@@ -365,20 +384,34 @@ Please try again or contact support."""
         """
         # Show personalized greeting on first message
         if is_first_message:
-            greeting = self.greeting_agent.greet(user_id, phone or "")
+            greeting = self.greeting_agent.greet(user_id, "")
             return {"final_response": greeting, "is_greeting": True}
         
-        # Retrieve booking state AND conversation history from AgentCore Memory
+        # Retrieve ALL context from AgentCore Memory
         memory_data = self._retrieve_memory(user_id, session_id)
         memory_params = memory_data.get('booking_params', {})
         conversation_history = memory_data.get('conversation_history', '')
         booking_completed = memory_data.get('booking_completed', False)
+        restaurants = memory_data.get('restaurants', [])  # From memory
+        selected_restaurant = memory_data.get('selected_restaurant')  # From memory
         
         print(f"[DEBUG] Memory params: {memory_params}")
         print(f"[DEBUG] Conversation history: {conversation_history[:200] if conversation_history else 'None'}...")
         print(f"[DEBUG] Booking completed: {booking_completed}")
+        print(f"[DEBUG] Restaurants from memory: {len(restaurants)}")
+        print(f"[DEBUG] Selected restaurant from memory: {selected_restaurant.get('name') if selected_restaurant else 'None'}")
         
-        # Initialize state with memory data as fallback
+        # Build context from memory ONLY
+        initial_context = {
+            'conversation_history': conversation_history,
+            'booking_completed': booking_completed,
+        }
+        if selected_restaurant:
+            initial_context['selected_restaurant'] = selected_restaurant
+        if memory_params:
+            initial_context['partial_params'] = memory_params
+
+        # Initialize state with memory data
         initial_state = RestaurantBookingState(
             correlation_id=session_id,
             user_id=user_id,
@@ -386,8 +419,8 @@ Please try again or contact support."""
             messages=[HumanMessage(content=user_message)],
             intent=None,
             confidence=None,
-            restaurants=restaurants or [],
-            selected_restaurant_id=selected_restaurant.get('restaurantId') if selected_restaurant else None,
+            restaurants=restaurants,  # From memory
+            selected_restaurant_id=selected_restaurant.get('restaurantId') if selected_restaurant else None,  # From memory
             booking_params=None,
             partial_booking_params=memory_params,
             booking_id=None,
@@ -399,11 +432,7 @@ Please try again or contact support."""
             retry_count=0,
             current_agent=None,
             next_agent=None,
-            context={
-                'selected_restaurant': selected_restaurant,
-                'conversation_history': conversation_history,
-                'booking_completed': booking_completed
-            } if (selected_restaurant or conversation_history or booking_completed) else {},
+            context=initial_context,
             final_response=None
         )
         
@@ -423,9 +452,15 @@ Please try again or contact support."""
         return final_state
     
     def _retrieve_memory(self, user_id: str, session_id: str) -> Dict[str, Any]:
-        """Retrieve booking state AND full conversation history from AgentCore Memory"""
+        """Retrieve conversation history and booking status from AgentCore Memory"""
         if not self.memory_id:
-            return {'booking_params': {}, 'conversation_history': '', 'booking_completed': False}
+            return {
+                'booking_params': {}, 
+                'conversation_history': '', 
+                'booking_completed': False,
+                'restaurants': [],
+                'selected_restaurant': None
+            }
         
         try:
             response = self.memory_client.list_events(
@@ -435,33 +470,18 @@ Please try again or contact support."""
                 maxResults=10
             )
             
-            import json
-            import base64
             events = response.get('events', [])
-            
             print(f"[DEBUG] Retrieved {len(events)} events for session {session_id[:20]}...")
             
-            # Extract booking params
-            booking_params = {}
+            # Extract booking status
             booking_completed = False
             for event in reversed(events):
                 metadata = event.get('metadata', {})
-                
-                # Check if booking was completed
                 if 'booking_completed' in metadata:
                     booking_completed = metadata['booking_completed'].get('stringValue') == 'true'
-                
-                # Extract booking params
-                if 'booking_params_b64' in metadata:
-                    try:
-                        params_b64 = metadata['booking_params_b64'].get('stringValue', '')
-                        booking_params = json.loads(base64.b64decode(params_b64).decode())
-                    except: pass
-                
-                if booking_completed:
                     break
             
-            # Build full conversation history from all events
+            # Build conversation history from all events
             conversation_turns = []
             for event in events:
                 for item in event.get('payload', []):
@@ -473,13 +493,21 @@ Please try again or contact support."""
             conversation_history = "\n".join(conversation_turns)
             
             return {
-                'booking_params': booking_params,
+                'booking_params': {},
                 'conversation_history': conversation_history,
-                'booking_completed': booking_completed
+                'booking_completed': booking_completed,
+                'restaurants': [],
+                'selected_restaurant': None
             }
         except Exception as e:
             print(f"[DEBUG] Memory retrieval exception: {e}")
-            return {'booking_params': {}, 'conversation_history': '', 'booking_completed': False}
+            return {
+                'booking_params': {}, 
+                'conversation_history': '', 
+                'booking_completed': False,
+                'restaurants': [],
+                'selected_restaurant': None
+            }
     
     def _store_memory(
         self,
@@ -496,21 +524,14 @@ Please try again or contact support."""
         
         try:
             import datetime
-            import base64
-            import json
             
-            # Build metadata with booking state (base64 encoded to avoid validation issues)
+            # Build metadata (only booking status, no restaurant data)
             memory_metadata = {'intent': {'stringValue': intent or 'unknown'}}
             
-            # Only store booking params when booking SUCCEEDS
-            if metadata.get('booking_id'):  # Booking completed successfully
+            # Only store booking completion status
+            if metadata.get('booking_id'):
                 memory_metadata['booking_id'] = {'stringValue': metadata['booking_id']}
-                memory_metadata['booking_completed'] = {'stringValue': 'true'}  # Flag to prevent duplicate bookings
-                # Store final booking params only on success
-                if metadata.get('partial_booking_params'):
-                    params_json = json.dumps(metadata['partial_booking_params'])
-                    params_b64 = base64.b64encode(params_json.encode()).decode()
-                    memory_metadata['booking_params_b64'] = {'stringValue': params_b64}
+                memory_metadata['booking_completed'] = {'stringValue': 'true'}
             
             self.memory_client.create_event(
                 memoryId=self.memory_id,
